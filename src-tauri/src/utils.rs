@@ -21,7 +21,9 @@ pub fn cancel_current_operation(app: &AppHandle) {
     // Unregister the cancel shortcut asynchronously
     shortcut::unregister_cancel_shortcut(app);
 
-    // Stop streaming if active
+    // Stop streaming if active. stop_streaming() joins a thread, which is
+    // fine here — this function is called from sync contexts (tray handler,
+    // CLI callback, shortcut handler), not from async Tokio tasks.
     if let Some(sm) = app.try_state::<Arc<StreamingManager>>() {
         sm.stop_streaming();
     }

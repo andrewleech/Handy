@@ -132,12 +132,12 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     app_handle.manage(history_manager.clone());
     app_handle.manage(streaming_manager.clone());
 
+    // Read settings once for startup configuration
+    let startup_settings = settings::get_settings(app_handle);
+
     // If streaming is enabled, preload the streaming model in the background
-    {
-        let settings = settings::get_settings(app_handle);
-        if settings.streaming_enabled {
-            streaming_manager.preload_model(&settings.streaming_model);
-        }
+    if startup_settings.streaming_enabled {
+        streaming_manager.preload_model(&startup_settings.streaming_model);
     }
 
     // Note: Shortcuts are NOT initialized here.
@@ -153,11 +153,8 @@ fn initialize_core_logic(app_handle: &AppHandle) {
 
     // Apply macOS Accessory policy if starting hidden
     #[cfg(target_os = "macos")]
-    {
-        let settings = settings::get_settings(app_handle);
-        if settings.start_hidden {
-            let _ = app_handle.set_activation_policy(tauri::ActivationPolicy::Accessory);
-        }
+    if startup_settings.start_hidden {
+        let _ = app_handle.set_activation_policy(tauri::ActivationPolicy::Accessory);
     }
     // Get the current theme to set the appropriate initial icon
     let initial_theme = tray::get_current_theme(app_handle);

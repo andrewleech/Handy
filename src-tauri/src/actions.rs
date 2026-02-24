@@ -421,9 +421,12 @@ impl ShortcutAction for TranscribeAction {
                 binding_id
             );
 
-            // Stop streaming and clear the channel before batch transcription
-            sm.stop_streaming();
-            rm.set_streaming_channel(None);
+            // Stop streaming and clear the channel before batch transcription.
+            // Use block_in_place because stop_streaming() joins a thread.
+            tokio::task::block_in_place(|| {
+                sm.stop_streaming();
+                rm.set_streaming_channel(None);
+            });
 
             let stop_recording_time = Instant::now();
             if let Some(samples) = rm.stop_recording(&binding_id) {

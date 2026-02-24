@@ -232,10 +232,6 @@
         "label": "Tính năng thử nghiệm",
         "description": "Bật các tính năng thử nghiệm đang trong quá trình phát triển."
       },
-      "streamingToggle": {
-        "label": "Live Transcription Preview",
-        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model."
-      },
       "startHidden": {
         "label": "Khởi động ẩn",
         "description": "Khởi động vào khay hệ thống mà không mở cửa sổ."

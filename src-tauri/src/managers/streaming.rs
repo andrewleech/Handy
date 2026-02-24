@@ -1,4 +1,4 @@
-use crate::audio_toolkit::StreamingAudioChannel;
+use crate::audio_toolkit::{filter_transcription_output, StreamingAudioChannel};
 use crate::managers::model::ModelManager;
 use log::{debug, error, info, warn};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -26,6 +26,7 @@ pub struct StreamingManager {
     engine_ready_condvar: Arc<Condvar>,
     stop_flag: Arc<Mutex<Option<Arc<AtomicBool>>>>,
     thread_handle: Arc<Mutex<Option<JoinHandle<()>>>>,
+    preload_handle: Mutex<Option<JoinHandle<()>>>,
 }
 
 impl StreamingManager {
@@ -37,6 +38,7 @@ impl StreamingManager {
             engine_ready_condvar: Arc::new(Condvar::new()),
             stop_flag: Arc::new(Mutex::new(None)),
             thread_handle: Arc::new(Mutex::new(None)),
+            preload_handle: Mutex::new(None),
         }
     }
 
@@ -72,7 +74,7 @@ impl StreamingManager {
         let condvar = self.engine_ready_condvar.clone();
         let model_id = model_id.to_string();
 
-        thread::spawn(move || {
+        let handle = thread::spawn(move || {
             info!("Preloading streaming model: {}", model_id);
             let mut engine = NemotronStreamingEngine::new();
             match engine.load_model(&model_path) {
@@ -94,6 +96,12 @@ impl StreamingManager {
                 }
             }
         });
+
+        let mut handle_guard = self.preload_handle.lock().unwrap();
+        if let Some(prev) = handle_guard.take() {
+            let _ = prev.join();
+        }
+        *handle_guard = Some(handle);
     }
 
     /// Takes the engine from cache, creates a channel, spawns the streaming loop.
@@ -208,6 +216,9 @@ impl StreamingManager {
 impl Drop for StreamingManager {
     fn drop(&mut self) {
         self.stop_streaming();
+        if let Some(handle) = self.preload_handle.lock().unwrap().take() {
+            let _ = handle.join();
+        }
     }
 }
 
@@ -358,7 +369,14 @@ fn streaming_loop(
                 let display = acc.display_text();
 
                 if !display.is_empty() {
-                    let _ = app_handle.emit_to("recording_overlay", "streaming-text", &display);
+                    let filtered = filter_transcription_output(&display);
+                    if !filtered.is_empty() {
+                        let _ = app_handle.emit_to(
+                            "recording_overlay",
+                            "streaming-text",
+                            &filtered,
+                        );
+                    }
                 }
             }
             Err(e) => {

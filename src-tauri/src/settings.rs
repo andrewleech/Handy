@@ -868,4 +868,11 @@ mod tests {
         assert!(!settings.auto_submit);
         assert_eq!(settings.auto_submit_key, AutoSubmitKey::Enter);
     }
+
+    #[test]
+    fn default_settings_streaming_disabled() {
+        let settings = get_default_settings();
+        assert!(!settings.streaming_enabled);
+        assert_eq!(settings.streaming_model, "nemotron-streaming");
+    }
 }
