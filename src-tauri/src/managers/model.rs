@@ -23,6 +23,7 @@ pub enum EngineType {
     Moonshine,
     MoonshineStreaming,
     SenseVoice,
+    NemotronStreaming,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -393,6 +394,29 @@ impl ModelManager {
                 supports_translation: false,
                 is_recommended: false,
                 supported_languages: sense_voice_languages,
+                is_custom: false,
+            },
+        );
+
+        available_models.insert(
+            "nemotron-streaming".to_string(),
+            ModelInfo {
+                id: "nemotron-streaming".to_string(),
+                name: "Nemotron Streaming".to_string(),
+                description: "English only. Used for live transcription preview.".to_string(),
+                filename: "nemotron-streaming".to_string(),
+                url: Some("https://blob.handy.computer/nemotron-streaming.tar.gz".to_string()),
+                size_mb: 200,
+                is_downloaded: false,
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: true,
+                engine_type: EngineType::NemotronStreaming,
+                accuracy_score: 0.70,
+                speed_score: 0.90,
+                supports_translation: false,
+                is_recommended: false,
+                supported_languages: vec!["en".to_string()],
                 is_custom: false,
             },
         );

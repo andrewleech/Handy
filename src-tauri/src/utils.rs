@@ -1,4 +1,5 @@
 use crate::managers::audio::AudioRecordingManager;
+use crate::managers::streaming::StreamingManager;
 use crate::managers::transcription::TranscriptionManager;
 use crate::shortcut;
 use crate::TranscriptionCoordinator;
@@ -20,9 +21,15 @@ pub fn cancel_current_operation(app: &AppHandle) {
     // Unregister the cancel shortcut asynchronously
     shortcut::unregister_cancel_shortcut(app);
 
+    // Stop streaming if active
+    if let Some(sm) = app.try_state::<Arc<StreamingManager>>() {
+        sm.stop_streaming();
+    }
+
     // Cancel any ongoing recording
     let audio_manager = app.state::<Arc<AudioRecordingManager>>();
     let recording_was_active = audio_manager.is_recording();
+    audio_manager.set_streaming_channel(None);
     audio_manager.cancel_recording();
 
     // Update tray icon and hide overlay

@@ -68,9 +68,12 @@ chrono = "0.4"
 rusqlite = { version = "0.37", features = ["bundled"] }
 tar = "0.4.44"
 flate2 = "1.0"
-transcribe-rs = { version = "0.2.5", features = ["whisper", "parakeet", "moonshine", "sense_voice"] }
+# TODO: Switch to upstream once streaming support is merged (fork: andrewleech/transcribe-rs)
+transcribe-rs = { git = "https://github.com/andrewleech/transcribe-rs", rev = "b099fe750c2642c71d97fc2b78d117c51de20491", features = ["whisper", "parakeet", "moonshine", "sense_voice", "nemotron-streaming"] }
+crossbeam-channel = "0.5"
 handy-keys = "0.2.0"
 ferrous-opencc = "0.2.3"
+sha2 = "0.10"
 clap = { version = "4", features = ["derive"] }
 specta = "=2.0.0-rc.22"
 specta-typescript = "0.0.9"
@@ -106,6 +109,11 @@ gtk = "0.18"
 tauri-runtime = { git = "https://github.com/cjpais/tauri.git", branch = "handy-2.9.1" }
 tauri-runtime-wry = { git = "https://github.com/cjpais/tauri.git", branch = "handy-2.9.1" }
 tauri-utils = { git = "https://github.com/cjpais/tauri.git", branch = "handy-2.9.1" }
+
+[patch."https://github.com/cjpais/vad-rs"]
+# TODO: Remove patch once vad-rs upstream supports ort 2.x / ndarray 0.16
+# (see patches/vad-rs/PATCH_NOTES.md for details)
+vad-rs = { path = "patches/vad-rs" }
 
 [dev-dependencies]
 tempfile = "3"

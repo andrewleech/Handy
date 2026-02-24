@@ -13,12 +13,13 @@ use crate::audio_toolkit::{
     audio::{AudioVisualiser, FrameResampler},
     constants,
     vad::{self, VadFrame},
-    VoiceActivityDetector,
+    StreamingAudioChannel, VoiceActivityDetector,
 };
 
 enum Cmd {
     Start,
     Stop(mpsc::Sender<Vec<f32>>),
+    SetStreamingChannel(Option<Arc<StreamingAudioChannel>>),
     Shutdown,
 }
 
@@ -39,6 +40,12 @@ impl AudioRecorder {
             vad: None,
             level_cb: None,
         })
+    }
+
+    pub fn set_streaming_channel(&self, channel: Option<Arc<StreamingAudioChannel>>) {
+        if let Some(tx) = &self.cmd_tx {
+            let _ = tx.send(Cmd::SetStreamingChannel(channel));
+        }
     }
 
     pub fn with_vad(mut self, vad: Box<dyn VoiceActivityDetector>) -> Self {
@@ -246,6 +253,7 @@ fn run_consumer(
     cmd_rx: mpsc::Receiver<Cmd>,
     level_cb: Option<Arc<dyn Fn(Vec<f32>) + Send + Sync + 'static>>,
 ) {
+    let mut streaming_tx: Option<Arc<StreamingAudioChannel>> = None;
     let mut frame_resampler = FrameResampler::new(
         in_sample_rate as usize,
         constants::WHISPER_SAMPLE_RATE as usize,
@@ -302,6 +310,14 @@ fn run_consumer(
 
         // ---------- existing pipeline ------------------------------------ //
         frame_resampler.push(&raw, &mut |frame: &[f32]| {
+            // Streaming engine receives all audio frames, including silence,
+            // because it performs its own internal endpoint detection. The
+            // batch transcription path (handle_frame) applies VAD separately.
+            if recording {
+                if let Some(ref ch) = streaming_tx {
+                    ch.try_send(frame.to_vec());
+                }
+            }
             handle_frame(frame, recording, &vad, &mut processed_samples)
         });
 
@@ -325,6 +341,9 @@ fn run_consumer(
                     });
 
                     let _ = reply_tx.send(std::mem::take(&mut processed_samples));
+                }
+                Cmd::SetStreamingChannel(ch) => {
+                    streaming_tx = ch;
                 }
                 Cmd::Shutdown => return,
             }

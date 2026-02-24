@@ -232,6 +232,10 @@
         "label": "Funciones Experimentales",
         "description": "Habilitar funciones experimentales que aún están en desarrollo."
       },
+      "streamingToggle": {
+        "label": "Live Transcription Preview",
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model."
+      },
       "startHidden": {
         "label": "Iniciar Oculto",
         "description": "Lanzar en la bandeja del sistema sin abrir la ventana."

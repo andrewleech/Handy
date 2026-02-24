@@ -358,6 +358,12 @@ pub struct AppSettings {
     pub paste_delay_ms: u64,
     #[serde(default = "default_typing_tool")]
     pub typing_tool: TypingTool,
+    #[serde(default)]
+    pub streaming_enabled: bool,
+    /// Not yet exposed to frontend — only one streaming model exists.
+    /// When additional models are added, add a change_streaming_model_setting command.
+    #[serde(default = "default_streaming_model")]
+    pub streaming_model: String,
 }
 
 fn default_model() -> String {
@@ -560,6 +566,10 @@ fn default_typing_tool() -> TypingTool {
     TypingTool::Auto
 }
 
+fn default_streaming_model() -> String {
+    "nemotron-streaming".to_string()
+}
+
 fn ensure_post_process_defaults(settings: &mut AppSettings) -> bool {
     let mut changed = false;
     for provider in default_post_process_providers() {
@@ -713,6 +723,8 @@ pub fn get_default_settings() -> AppSettings {
         show_tray_icon: default_show_tray_icon(),
         paste_delay_ms: default_paste_delay_ms(),
         typing_tool: default_typing_tool(),
+        streaming_enabled: false,
+        streaming_model: default_streaming_model(),
     }
 }
 
