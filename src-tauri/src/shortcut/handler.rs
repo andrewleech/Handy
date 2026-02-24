@@ -3,7 +3,7 @@
 //! This module contains the common logic for handling shortcut events,
 //! used by both the Tauri and handy-keys implementations.
 
-use log::warn;
+use log::{debug, warn};
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 
@@ -36,8 +36,19 @@ pub fn handle_shortcut_event(
 
     // Transcribe bindings are handled by the coordinator.
     if is_transcribe_binding(binding_id) {
+        // Live typing requires toggle mode (no keys held during recording).
+        // Override push-to-talk at the consumption site so the persisted value is never corrupted.
+        let push_to_talk = if settings.streaming_enabled
+            && settings.streaming_live_typing
+            && !settings.always_on_microphone
+        {
+            debug!("Push-to-talk overridden by live typing mode");
+            false
+        } else {
+            settings.push_to_talk
+        };
         if let Some(coordinator) = app.try_state::<TranscriptionCoordinator>() {
-            coordinator.send_input(binding_id, hotkey_string, is_pressed, settings.push_to_talk);
+            coordinator.send_input(binding_id, hotkey_string, is_pressed, push_to_talk);
         } else {
             warn!("TranscriptionCoordinator is not initialized");
         }

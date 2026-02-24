@@ -97,7 +97,10 @@ impl StreamingManager {
             }
         });
 
-        let mut handle_guard = self.preload_handle.lock().unwrap();
+        let mut handle_guard = self
+            .preload_handle
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
         if let Some(prev) = handle_guard.take() {
             let _ = prev.join();
         }
@@ -110,7 +113,7 @@ impl StreamingManager {
     /// Callers must ensure only one thread calls start/stop at a time.
     /// Concurrent calls risk deadlock: stop_streaming joins the streaming
     /// thread, which acquires engine_slot on exit.
-    pub fn start_streaming(&self) -> Option<Arc<StreamingAudioChannel>> {
+    pub fn start_streaming(&self, live_typing: bool) -> Option<Arc<StreamingAudioChannel>> {
         // Stop any previous session first
         self.stop_streaming();
 
@@ -144,7 +147,7 @@ impl StreamingManager {
         let engine_slot = self.engine_slot.clone();
 
         let handle = thread::spawn(move || {
-            streaming_loop(engine, receiver, stop, app_handle, engine_slot);
+            streaming_loop(engine, receiver, stop, app_handle, engine_slot, live_typing);
         });
 
         {
@@ -156,6 +159,32 @@ impl StreamingManager {
         }
 
         Some(channel)
+    }
+
+    /// Waits for the engine to become ready, then starts streaming.
+    /// Blocks for up to `timeout`. Returns None if cancelled, timed out,
+    /// or engine was consumed.
+    pub fn start_streaming_when_ready(
+        &self,
+        live_typing: bool,
+        timeout: Duration,
+        should_cancel: impl Fn() -> bool,
+    ) -> Option<Arc<StreamingAudioChannel>> {
+        let ready = self.wait_for_engine_ready(timeout, &should_cancel);
+        if should_cancel() {
+            return None;
+        }
+        if ready {
+            self.start_streaming(live_typing)
+        } else {
+            None
+        }
+    }
+
+    /// Returns true if the streaming engine is loaded and ready to use.
+    #[allow(dead_code)]
+    pub fn is_engine_ready(&self) -> bool {
+        matches!(*self.lock_engine_slot(), EngineSlot::Ready(_))
     }
 
     /// Blocks until the engine becomes ready, the slot becomes empty (load failed),
@@ -216,7 +245,12 @@ impl StreamingManager {
 impl Drop for StreamingManager {
     fn drop(&mut self) {
         self.stop_streaming();
-        if let Some(handle) = self.preload_handle.lock().unwrap().take() {
+        if let Some(handle) = self
+            .preload_handle
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .take()
+        {
             let _ = handle.join();
         }
     }
@@ -331,8 +365,15 @@ fn streaming_loop(
     stop: Arc<AtomicBool>,
     app_handle: AppHandle,
     engine_slot: Arc<Mutex<EngineSlot>>,
+    live_typing: bool,
 ) {
     let mut acc = TextAccumulator::new();
+
+    // Backpressure for live typing: at most one pending dispatch on the main thread.
+    // Fragments arriving while a dispatch is in-flight are buffered and sent as a
+    // single batch once the previous dispatch completes.
+    let typing_in_flight = Arc::new(AtomicBool::new(false));
+    let pending_fragments = Arc::new(Mutex::new(String::new()));
 
     debug!("Streaming loop started");
 
@@ -353,6 +394,43 @@ fn streaming_loop(
                 for segment in segments {
                     let is_endpoint = acc.push_segment(&segment.text, segment.is_endpoint);
 
+                    // Live type fragments with backpressure: buffer text and
+                    // dispatch to main thread only when no previous dispatch
+                    // is in-flight, bounding the main-thread queue to one closure.
+                    if live_typing && !segment.text.trim().is_empty() {
+                        let mut pending = pending_fragments
+                            .lock()
+                            .unwrap_or_else(|p| p.into_inner());
+                        pending.push_str(&segment.text);
+                        // Cap pending buffer to prevent unbounded growth if main thread stalls
+                        if pending.len() > MAX_SENTENCE_LEN {
+                            truncate_front(&mut pending, MAX_SENTENCE_LEN);
+                        }
+
+                        if !typing_in_flight.load(Ordering::Acquire) {
+                            let text = std::mem::take(&mut *pending);
+                            drop(pending);
+                            typing_in_flight.store(true, Ordering::Release);
+                            let flag = typing_in_flight.clone();
+                            let ah = app_handle.clone();
+                            if app_handle
+                                .run_on_main_thread(move || {
+                                    if let Err(e) =
+                                        crate::clipboard::type_text_direct(&ah, &text)
+                                    {
+                                        error!("Live typing failed: {}", e);
+                                    }
+                                    flag.store(false, Ordering::Release);
+                                })
+                                .is_err()
+                            {
+                                // Main thread dispatch failed (e.g. app shutting down).
+                                // Reset in-flight flag to avoid permanently blocking typing.
+                                typing_in_flight.store(false, Ordering::Release);
+                            }
+                        }
+                    }
+
                     if is_endpoint {
                         debug!(
                             "Endpoint detected, completed_text: '{}'",
@@ -366,22 +444,41 @@ fn streaming_loop(
                     }
                 }
 
-                let display = acc.display_text();
+                // Update overlay preview (skip when live typing — text goes
+                // directly to the focused app, overlay just shows audio meter)
+                if !live_typing {
+                    let display = acc.display_text();
 
-                if !display.is_empty() {
-                    let filtered = filter_transcription_output(&display);
-                    if !filtered.is_empty() {
-                        let _ = app_handle.emit_to(
-                            "recording_overlay",
-                            "streaming-text",
-                            &filtered,
-                        );
+                    if !display.is_empty() {
+                        let filtered = filter_transcription_output(&display);
+                        if !filtered.is_empty() {
+                            let _ = app_handle
+                                .emit_to("recording_overlay", "streaming-text", &filtered);
+                        }
                     }
                 }
             }
             Err(e) => {
                 warn!("Streaming engine push_samples error: {}", e);
             }
+        }
+    }
+
+    // Flush any remaining pending fragments before exiting
+    if live_typing {
+        let remaining = {
+            let mut pending = pending_fragments
+                .lock()
+                .unwrap_or_else(|p| p.into_inner());
+            std::mem::take(&mut *pending)
+        };
+        if !remaining.is_empty() {
+            let ah = app_handle.clone();
+            let _ = app_handle.run_on_main_thread(move || {
+                if let Err(e) = crate::clipboard::type_text_direct(&ah, &remaining) {
+                    error!("Live typing flush failed: {}", e);
+                }
+            });
         }
     }
 

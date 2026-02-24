@@ -1,3 +1,4 @@
+use crate::live_typing_listener::LiveTypingListenerState;
 use crate::managers::audio::AudioRecordingManager;
 use crate::managers::streaming::StreamingManager;
 use crate::managers::transcription::TranscriptionManager;
@@ -13,6 +14,15 @@ pub use crate::clipboard::*;
 pub use crate::overlay::*;
 pub use crate::tray::*;
 
+/// Stops the live typing listener if active.
+pub fn stop_live_typing(app: &AppHandle) {
+    if let Some(state) = app.try_state::<LiveTypingListenerState>() {
+        if let Some(mut listener) = state.0.lock().unwrap_or_else(|p| p.into_inner()).take() {
+            listener.stop();
+        }
+    }
+}
+
 /// Centralized cancellation function that can be called from anywhere in the app.
 /// Handles cancelling both recording and transcription operations and updates UI state.
 pub fn cancel_current_operation(app: &AppHandle) {
@@ -20,6 +30,9 @@ pub fn cancel_current_operation(app: &AppHandle) {
 
     // Unregister the cancel shortcut asynchronously
     shortcut::unregister_cancel_shortcut(app);
+
+    // Stop the live typing key listener (if active)
+    stop_live_typing(app);
 
     // Stop streaming if active. stop_streaming() joins a thread, which is
     // fine here — this function is called from sync contexts (tray handler,

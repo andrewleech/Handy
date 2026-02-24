@@ -878,4 +878,5 @@ mod tests {
         assert!(!settings.streaming_enabled);
         assert_eq!(settings.streaming_model, "nemotron-streaming");
     }
+
 }

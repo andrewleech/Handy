@@ -11,7 +11,7 @@ import { commands } from "@/bindings";
 import i18n, { syncLanguageFromSettings } from "@/i18n";
 import { getLanguageDirection } from "@/lib/utils/rtl";
 
-type OverlayState = "recording" | "transcribing" | "processing";
+type OverlayState = "recording" | "transcribing" | "processing" | "preparing";
 
 const RecordingOverlay: React.FC = () => {
   const { t } = useTranslation();
@@ -83,7 +83,7 @@ const RecordingOverlay: React.FC = () => {
   }, [streamingText]);
 
   const getIcon = () => {
-    if (state === "recording") {
+    if (state === "recording" || state === "preparing") {
       return <MicrophoneIcon />;
     } else {
       return <TranscriptionIcon />;
@@ -125,10 +125,13 @@ const RecordingOverlay: React.FC = () => {
         {state === "processing" && (
           <div className="transcribing-text">{t("overlay.processing")}</div>
         )}
+        {state === "preparing" && (
+          <div className="transcribing-text">{t("overlay.preparing")}</div>
+        )}
       </div>
 
       <div className="overlay-right">
-        {state === "recording" && (
+        {(state === "recording" || state === "preparing") && (
           <div
             className="cancel-button"
             onClick={() => {

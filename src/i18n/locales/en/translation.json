@@ -548,6 +548,7 @@
   },
   "overlay": {
     "transcribing": "Transcribing...",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "preparing": "Preparing..."
   }
 }

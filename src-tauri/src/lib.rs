@@ -8,6 +8,7 @@ mod clipboard;
 mod commands;
 mod helpers;
 mod input;
+mod live_typing_listener;
 mod llm_client;
 mod managers;
 mod overlay;
@@ -437,6 +438,9 @@ pub fn run(cli_args: CliArgs) {
             FILE_LOG_LEVEL.store(file_log_level.to_level_filter() as u8, Ordering::Relaxed);
             let app_handle = app.handle().clone();
             app.manage(TranscriptionCoordinator::new(app_handle.clone()));
+            app.manage(live_typing_listener::LiveTypingListenerState(
+                std::sync::Mutex::new(None),
+            ));
 
             initialize_core_logic(&app_handle);
 
