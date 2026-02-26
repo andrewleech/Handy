@@ -111,7 +111,7 @@ impl StreamingManager {
                 Some(EngineType::Qwen3Streaming) => {
                     let mut e = Qwen3StreamingEngine::new();
                     let params = Qwen3StreamingModelParams {
-                        quantized: true,
+                        quantized: false,
                         ..Default::default()
                     };
                     e.load_model_with_params(&model_path, params)
