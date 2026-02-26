@@ -7,6 +7,8 @@ import { ModelCard } from "@/components/onboarding";
 import { useModelStore } from "@/stores/modelStore";
 import { LANGUAGES } from "@/lib/constants/languages.ts";
 import type { ModelInfo } from "@/bindings";
+import { isStreamingEngine } from "@/lib/constants/models";
+import { useSettings } from "@/hooks/useSettings";
 
 // check if model supports a language based on its supported_languages list
 const modelSupportsLanguage = (model: ModelInfo, langCode: string): boolean => {
@@ -34,6 +36,11 @@ export const ModelsSettings: React.FC = () => {
     selectModel,
     deleteModel,
   } = useModelStore();
+
+  const { getSetting, updateSetting } = useSettings();
+  const streamingEnabled = getSetting("streaming_enabled") || false;
+  const currentStreamingModel =
+    getSetting("streaming_model") || "nemotron-streaming";
 
   // click outside handler for language dropdown
   useEffect(() => {
@@ -84,10 +91,19 @@ export const ModelsSettings: React.FC = () => {
     if (switchingModelId === modelId) {
       return "switching";
     }
+    const model = models.find((m: ModelInfo) => m.id === modelId);
+    if (model && isStreamingEngine(model.engine_type)) {
+      if (modelId === currentStreamingModel) {
+        return "active";
+      }
+      if (model.is_downloaded) {
+        return "available";
+      }
+      return "downloadable";
+    }
     if (modelId === currentModel) {
       return "active";
     }
-    const model = models.find((m: ModelInfo) => m.id === modelId);
     if (model?.is_downloaded) {
       return "available";
     }
@@ -113,6 +129,10 @@ export const ModelsSettings: React.FC = () => {
     }
   };
 
+  const handleStreamingModelSelect = async (modelId: string) => {
+    await updateSetting("streaming_model", modelId);
+  };
+
   const handleModelDownload = async (modelId: string) => {
     await downloadModel(modelId);
   };
@@ -120,7 +140,8 @@ export const ModelsSettings: React.FC = () => {
   const handleModelDelete = async (modelId: string) => {
     const model = models.find((m: ModelInfo) => m.id === modelId);
     const modelName = model?.name || modelId;
-    const isActive = modelId === currentModel;
+    const isActive =
+      modelId === currentModel || modelId === currentStreamingModel;
 
     const confirmed = await ask(
       isActive
@@ -149,7 +170,7 @@ export const ModelsSettings: React.FC = () => {
     }
   };
 
-  // Filter models based on language filter
+  // Filter models based on language filter (all model types included)
   const filteredModels = useMemo(() => {
     return models.filter((model: ModelInfo) => {
       if (languageFilter !== "all") {
@@ -159,37 +180,61 @@ export const ModelsSettings: React.FC = () => {
     });
   }, [models, languageFilter]);
 
-  // Split filtered models into downloaded (including custom) and available sections
-  const { downloadedModels, availableModels } = useMemo(() => {
-    const downloaded: ModelInfo[] = [];
-    const available: ModelInfo[] = [];
+  // Split filtered models into downloaded transcription, downloaded streaming, and available
+  const { downloadedTranscription, downloadedStreaming, availableModels } =
+    useMemo(() => {
+      const transcription: ModelInfo[] = [];
+      const streaming: ModelInfo[] = [];
+      const available: ModelInfo[] = [];
 
-    for (const model of filteredModels) {
-      if (
-        model.is_custom ||
-        model.is_downloaded ||
-        model.id in downloadingModels ||
-        model.id in extractingModels
-      ) {
-        downloaded.push(model);
-      } else {
-        available.push(model);
+      for (const model of filteredModels) {
+        const isDownloaded =
+          model.is_custom ||
+          model.is_downloaded ||
+          model.id in downloadingModels ||
+          model.id in extractingModels;
+
+        if (isDownloaded) {
+          if (isStreamingEngine(model.engine_type)) {
+            streaming.push(model);
+          } else {
+            transcription.push(model);
+          }
+        } else {
+          available.push(model);
+        }
       }
-    }
 
-    // Sort: active model first, then non-custom, then custom at the bottom
-    downloaded.sort((a, b) => {
-      if (a.id === currentModel) return -1;
-      if (b.id === currentModel) return 1;
-      if (a.is_custom !== b.is_custom) return a.is_custom ? 1 : -1;
-      return 0;
-    });
+      // Sort transcription: active first, then non-custom, then custom
+      transcription.sort((a, b) => {
+        if (a.id === currentModel) return -1;
+        if (b.id === currentModel) return 1;
+        if (a.is_custom !== b.is_custom) return a.is_custom ? 1 : -1;
+        return 0;
+      });
 
-    return {
-      downloadedModels: downloaded,
-      availableModels: available,
-    };
-  }, [filteredModels, downloadingModels, extractingModels, currentModel]);
+      // Sort streaming: active streaming model first
+      streaming.sort((a, b) => {
+        if (a.id === currentStreamingModel) return -1;
+        if (b.id === currentStreamingModel) return 1;
+        return 0;
+      });
+
+      return {
+        downloadedTranscription: transcription,
+        downloadedStreaming: streaming,
+        availableModels: available,
+      };
+    }, [
+      filteredModels,
+      downloadingModels,
+      extractingModels,
+      currentModel,
+      currentStreamingModel,
+    ]);
+
+  const hasDownloadedModels =
+    downloadedTranscription.length > 0 || downloadedStreaming.length > 0;
 
   if (loading) {
     return (
@@ -312,20 +357,63 @@ export const ModelsSettings: React.FC = () => {
                 )}
               </div>
             </div>
-            {downloadedModels.map((model: ModelInfo) => (
-              <ModelCard
-                key={model.id}
-                model={model}
-                status={getModelStatus(model.id)}
-                onSelect={handleModelSelect}
-                onDownload={handleModelDownload}
-                onDelete={handleModelDelete}
-                onCancel={handleModelCancel}
-                downloadProgress={getDownloadProgress(model.id)}
-                downloadSpeed={getDownloadSpeed(model.id)}
-                showRecommended={false}
-              />
-            ))}
+
+            {/* Transcription models subsection */}
+            {downloadedTranscription.length > 0 && (
+              <div className="space-y-3">
+                {hasDownloadedModels &&
+                  downloadedStreaming.length + downloadedTranscription.length >
+                    downloadedTranscription.length && (
+                    <h3 className="text-xs font-medium text-text/40 uppercase tracking-wide">
+                      {t("settings.models.transcriptionModels")}
+                    </h3>
+                  )}
+                {downloadedTranscription.map((model: ModelInfo) => (
+                  <ModelCard
+                    key={model.id}
+                    model={model}
+                    status={getModelStatus(model.id)}
+                    onSelect={handleModelSelect}
+                    onDownload={handleModelDownload}
+                    onDelete={handleModelDelete}
+                    onCancel={handleModelCancel}
+                    downloadProgress={getDownloadProgress(model.id)}
+                    downloadSpeed={getDownloadSpeed(model.id)}
+                    showRecommended={false}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Streaming models subsection */}
+            {downloadedStreaming.length > 0 && (
+              <div
+                className={`space-y-3 ${!streamingEnabled ? "opacity-50 pointer-events-none" : ""}`}
+              >
+                <h3 className="text-xs font-medium text-text/40 uppercase tracking-wide">
+                  {t("settings.models.streamingModels")}
+                </h3>
+                {!streamingEnabled && (
+                  <p className="text-xs text-text/40 -mt-1">
+                    {t("settings.models.streamingDisabledHint")}
+                  </p>
+                )}
+                {downloadedStreaming.map((model: ModelInfo) => (
+                  <ModelCard
+                    key={model.id}
+                    model={model}
+                    status={getModelStatus(model.id)}
+                    onSelect={handleStreamingModelSelect}
+                    onDownload={handleModelDownload}
+                    onDelete={handleModelDelete}
+                    onCancel={handleModelCancel}
+                    downloadProgress={getDownloadProgress(model.id)}
+                    downloadSpeed={getDownloadSpeed(model.id)}
+                    showRecommended={false}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Available Models Section */}

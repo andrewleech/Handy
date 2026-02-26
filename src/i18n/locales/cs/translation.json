@@ -129,7 +129,8 @@
       "languageOnly": "Pouze {{language}}"
     },
     "cancel": "Zrušit",
-    "cancelDownload": "Zrušit stahování"
+    "cancelDownload": "Zrušit stahování",
+    "streaming": "Streaming"
   },
   "settings": {
     "modelSettings": {
@@ -137,8 +138,8 @@
       "noSettingsNeeded": "Tento model funguje automaticky bez nutnosti konfigurace."
     },
     "models": {
-      "title": "Modely přepisu",
-      "description": "Vyberte model přepisu nebo stáhněte další modely. Různé modely nabízejí různé úrovně přesnosti a rychlosti.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "downloaded": "Staženo",
       "available": "K dispozici ke stažení",
       "deleteConfirm": "Opravdu chcete smazat {{modelName}}? Pro opětovné použití jej budete muset znovu stáhnout.",
@@ -152,6 +153,9 @@
       },
       "noModelsMatch": "Tomuto filtru neodpovídají žádné modely.",
       "yourModels": "Stažené modely",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "Dostupné ke stažení"
     },
     "general": {

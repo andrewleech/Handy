@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import type { ModelInfo } from "@/bindings";
+import { isStreamingEngine } from "@/lib/constants/models";
 import {
   getTranslatedModelName,
   getTranslatedModelDescription,
@@ -18,7 +19,9 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
   onModelSelect,
 }) => {
   const { t } = useTranslation();
-  const downloadedModels = models.filter((m) => m.is_downloaded);
+  const downloadedModels = models.filter(
+    (m) => m.is_downloaded && !isStreamingEngine(m.engine_type),
+  );
 
   const handleModelClick = (modelId: string) => {
     onModelSelect(modelId);

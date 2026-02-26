@@ -122,6 +122,7 @@
     "downloadSpeed": "{{speed}} MB/s",
     "cancel": "취소",
     "cancelDownload": "다운로드 취소",
+    "streaming": "Streaming",
     "capabilities": {
       "languageSelection": "여러 입력 언어를 지원합니다",
       "singleLanguage": "이 언어만 지원합니다",
@@ -203,9 +204,12 @@
       }
     },
     "models": {
-      "title": "음성 인식 모델",
-      "description": "음성 인식 모델을 선택하거나 추가 모델을 다운로드하세요. 모델마다 정확도와 속도가 다릅니다.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "yourModels": "다운로드된 모델",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "다운로드 가능",
       "downloaded": "다운로드됨",
       "available": "다운로드 가능",

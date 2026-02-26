@@ -129,7 +129,8 @@
       "languageOnly": "Лише {{language}}"
     },
     "cancel": "Скасувати",
-    "cancelDownload": "Скасувати завантаження"
+    "cancelDownload": "Скасувати завантаження",
+    "streaming": "Streaming"
   },
   "settings": {
     "modelSettings": {
@@ -180,8 +181,8 @@
       }
     },
     "models": {
-      "title": "Моделі транскрипції",
-      "description": "Виберіть модель транскрипції або завантажте додаткові моделі. Різні моделі пропонують різні рівні точності та швидкості.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "downloaded": "Завантажено",
       "available": "Доступні для завантаження",
       "deleteConfirm": "Ви впевнені, що хочете видалити {{modelName}}? Вам потрібно буде завантажити її знову, щоб використовувати.",
@@ -195,6 +196,9 @@
       },
       "noModelsMatch": "Жодна модель не відповідає цьому фільтру.",
       "yourModels": "Завантажені моделі",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "Доступні для завантаження"
     },
     "sound": {

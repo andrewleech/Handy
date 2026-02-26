@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { ModelInfo } from "@/bindings";
+import { isStreamingEngine } from "@/lib/constants/models";
 import type { ModelCardStatus } from "./ModelCard";
 import ModelCard from "./ModelCard";
 import HandyTextLogo from "../icons/HandyTextLogo";
@@ -90,7 +91,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onModelSelected }) => {
       <div className="max-w-[600px] w-full mx-auto text-center flex-1 flex flex-col min-h-0">
         <div className="flex flex-col gap-4 pb-6">
           {models
-            .filter((m: ModelInfo) => !m.is_downloaded)
+            .filter((m: ModelInfo) => !m.is_downloaded && !isStreamingEngine(m.engine_type))
             .filter((model: ModelInfo) => model.is_recommended)
             .map((model: ModelInfo) => (
               <ModelCard
@@ -107,7 +108,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onModelSelected }) => {
             ))}
 
           {models
-            .filter((m: ModelInfo) => !m.is_downloaded)
+            .filter((m: ModelInfo) => !m.is_downloaded && !isStreamingEngine(m.engine_type))
             .filter((model: ModelInfo) => !model.is_recommended)
             .sort(
               (a: ModelInfo, b: ModelInfo) =>

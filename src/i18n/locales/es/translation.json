@@ -129,7 +129,8 @@
       "languageOnly": "Solo {{language}}"
     },
     "cancel": "Cancelar",
-    "cancelDownload": "Cancelar descarga"
+    "cancelDownload": "Cancelar descarga",
+    "streaming": "Streaming"
   },
   "settings": {
     "modelSettings": {
@@ -137,8 +138,8 @@
       "noSettingsNeeded": "Este modelo funciona automáticamente sin necesidad de configuración."
     },
     "models": {
-      "title": "Modelos de Transcripción",
-      "description": "Selecciona un modelo de transcripción o descarga modelos adicionales. Diferentes modelos ofrecen distintos niveles de precisión y velocidad.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "downloaded": "Descargados",
       "available": "Disponibles para Descargar",
       "deleteConfirm": "¿Estás seguro de que deseas eliminar {{modelName}}? Necesitarás descargarlo de nuevo para usarlo.",
@@ -152,6 +153,9 @@
       },
       "noModelsMatch": "Ningún modelo coincide con este filtro.",
       "yourModels": "Modelos descargados",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "Disponibles para descargar"
     },
     "general": {

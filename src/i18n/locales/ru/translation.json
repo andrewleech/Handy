@@ -129,7 +129,8 @@
       "languageOnly": "Только {{language}}"
     },
     "cancel": "Отмена",
-    "cancelDownload": "Отменить загрузку"
+    "cancelDownload": "Отменить загрузку",
+    "streaming": "Streaming"
   },
   "settings": {
     "modelSettings": {
@@ -137,8 +138,8 @@
       "noSettingsNeeded": "Эта модель работает автоматически без необходимости настройки."
     },
     "models": {
-      "title": "Модели транскрипции",
-      "description": "Выберите модель транскрипции или загрузите дополнительные модели. Разные модели предлагают разные уровни точности и скорости.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "downloaded": "Загружено",
       "available": "Доступно для загрузки",
       "deleteConfirm": "Вы уверены, что хотите удалить {{modelName}}? Вам нужно будет загрузить её снова, чтобы использовать.",
@@ -152,6 +153,9 @@
       },
       "noModelsMatch": "Нет моделей, соответствующих этому фильтру.",
       "yourModels": "Загруженные модели",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "Доступны для загрузки"
     },
     "general": {

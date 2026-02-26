@@ -121,6 +121,7 @@
     "deleteModel": "Delete {{modelName}}",
     "downloadSpeed": "{{speed}} MB/s",
     "cancel": "Cancel",
+    "streaming": "Streaming",
     "cancelDownload": "Cancel download",
     "capabilities": {
       "languageSelection": "Supports multiple input languages",
@@ -180,9 +181,12 @@
       }
     },
     "models": {
-      "title": "Transcription Models",
-      "description": "Select a transcription model or download additional models. Different models offer varying levels of accuracy and speed.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "yourModels": "Downloaded Models",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "Available to Download",
       "downloaded": "Downloaded",
       "available": "Available to Download",
@@ -235,7 +239,7 @@
       },
       "streamingToggle": {
         "label": "Live Transcription Preview",
-        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model.",
+        "description": "Show real-time transcription text in the recording overlay during recording.",
         "liveTypingLabel": "Live Typing",
         "liveTypingDescription": "Type finalized sentences directly into the focused application in real-time. Batch transcription result is placed in the clipboard after recording stops."
       },

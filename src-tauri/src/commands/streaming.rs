@@ -7,7 +7,7 @@
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 
-use crate::managers::model::ModelManager;
+use crate::managers::model::{EngineType, ModelManager};
 use crate::managers::streaming::StreamingManager;
 use crate::settings;
 
@@ -35,6 +35,41 @@ pub fn change_streaming_enabled_setting(app: AppHandle, enabled: bool) -> Result
             sm.unload_engine();
         }
     }
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_streaming_model_setting(app: AppHandle, model_id: String) -> Result<(), String> {
+    // Validate that the model_id refers to a streaming engine
+    if let Some(mm) = app.try_state::<Arc<ModelManager>>() {
+        let info = mm
+            .get_model_info(&model_id)
+            .ok_or_else(|| format!("Unknown model: {}", model_id))?;
+        match info.engine_type {
+            EngineType::NemotronStreaming | EngineType::Qwen3Streaming => {}
+            _ => return Err(format!("{} is not a streaming model", model_id)),
+        }
+    }
+
+    let mut s = settings::get_settings(&app);
+    let previous_model = s.streaming_model.clone();
+    s.streaming_model = model_id.clone();
+    let streaming_enabled = s.streaming_enabled;
+    settings::write_settings(&app, s);
+
+    // If streaming is active and the model changed, swap the engine
+    if streaming_enabled && model_id != previous_model {
+        if let Some(sm) = app.try_state::<Arc<StreamingManager>>() {
+            sm.unload_engine();
+            if let Some(mm) = app.try_state::<Arc<ModelManager>>() {
+                if mm.get_model_path(&model_id).is_ok() {
+                    sm.preload_model(&model_id);
+                }
+            }
+        }
+    }
+
     Ok(())
 }
 

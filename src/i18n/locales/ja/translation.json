@@ -129,7 +129,8 @@
       "languageOnly": "{{language}}のみ"
     },
     "cancel": "キャンセル",
-    "cancelDownload": "ダウンロードをキャンセル"
+    "cancelDownload": "ダウンロードをキャンセル",
+    "streaming": "Streaming"
   },
   "settings": {
     "modelSettings": {
@@ -137,8 +138,8 @@
       "noSettingsNeeded": "このモデルは設定不要で自動的に動作します。"
     },
     "models": {
-      "title": "転写モデル",
-      "description": "転写モデルを選択するか、追加のモデルをダウンロードします。異なるモデルは精度と速度のレベルが異なります。",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "downloaded": "ダウンロード済み",
       "available": "ダウンロード可能",
       "deleteConfirm": "{{modelName}}を削除してもよろしいですか？再度使用するにはダウンロードが必要です。",
@@ -152,6 +153,9 @@
       },
       "noModelsMatch": "このフィルターに一致するモデルがありません。",
       "yourModels": "ダウンロード済みモデル",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "ダウンロード可能"
     },
     "general": {

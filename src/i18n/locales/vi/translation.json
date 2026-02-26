@@ -129,7 +129,8 @@
       "languageOnly": "Chỉ {{language}}"
     },
     "cancel": "Hủy",
-    "cancelDownload": "Hủy tải xuống"
+    "cancelDownload": "Hủy tải xuống",
+    "streaming": "Streaming"
   },
   "settings": {
     "modelSettings": {
@@ -137,8 +138,8 @@
       "noSettingsNeeded": "Mô hình này hoạt động tự động mà không cần cấu hình."
     },
     "models": {
-      "title": "Mô hình chuyển đổi",
-      "description": "Chọn mô hình chuyển đổi hoặc tải thêm mô hình. Các mô hình khác nhau có mức độ chính xác và tốc độ khác nhau.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "downloaded": "Đã tải xuống",
       "available": "Có thể tải xuống",
       "deleteConfirm": "Bạn có chắc chắn muốn xóa {{modelName}}? Bạn sẽ cần tải lại để sử dụng.",
@@ -152,6 +153,9 @@
       },
       "noModelsMatch": "Không có mô hình nào khớp với bộ lọc này.",
       "yourModels": "Mô hình đã tải",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "Có sẵn để tải xuống"
     },
     "general": {

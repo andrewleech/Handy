@@ -15,6 +15,7 @@ import {
   getTranslatedModelName,
 } from "../../lib/utils/modelTranslation";
 import { LANGUAGES } from "../../lib/constants/languages";
+import { isStreamingEngine } from "../../lib/constants/models";
 import Badge from "../ui/Badge";
 import { Button } from "../ui/Button";
 
@@ -148,6 +149,9 @@ const ModelCard: React.FC<ModelCardProps> = ({
             )}
             {model.is_custom && (
               <Badge variant="secondary">{t("modelSelector.custom")}</Badge>
+            )}
+            {isStreamingEngine(model.engine_type) && (
+              <Badge variant="secondary">{t("modelSelector.streaming")}</Badge>
             )}
             {status === "switching" && (
               <Badge variant="secondary">

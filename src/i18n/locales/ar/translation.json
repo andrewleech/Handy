@@ -122,6 +122,7 @@
     "downloadSpeed": "{{speed}} ميجابايت/ث",
     "cancel": "إلغاء",
     "cancelDownload": "إلغاء التنزيل",
+    "streaming": "Streaming",
     "capabilities": {
       "languageSelection": "يدعم اختيار اللغة",
       "singleLanguage": "يدعم هذه اللغة فقط",
@@ -479,9 +480,12 @@
       "noSettingsNeeded": "لا توجد إعدادات مطلوبة لهذا النموذج"
     },
     "models": {
-      "title": "نماذج النسخ",
-      "description": "اختر نموذج نسخ أو قم بتنزيل نماذج إضافية. تقدم النماذج المختلفة مستويات متفاوتة من الدقة والسرعة.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "yourModels": "النماذج المحمّلة",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "متاح للتنزيل",
       "downloaded": "تم التنزيل",
       "available": "متاح للتنزيل",

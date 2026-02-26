@@ -1,5 +1,5 @@
 use crate::audio_toolkit::{filter_transcription_output, StreamingAudioChannel};
-use crate::managers::model::ModelManager;
+use crate::managers::model::{EngineType, ModelManager};
 use log::{debug, error, info, warn};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Condvar, Mutex, MutexGuard};
@@ -7,18 +7,42 @@ use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
 use transcribe_rs::engines::nemotron_streaming::NemotronStreamingEngine;
-use transcribe_rs::StreamingTranscriptionEngine;
+use transcribe_rs::engines::qwen3_streaming::{Qwen3StreamingEngine, Qwen3StreamingModelParams};
+use transcribe_rs::{StreamingSegment, StreamingTranscriptionEngine};
+
+/// Wraps the concrete streaming engine types behind a single enum
+/// so the rest of the manager is engine-agnostic.
+enum StreamingEngine {
+    Nemotron(NemotronStreamingEngine),
+    Qwen3(Qwen3StreamingEngine),
+}
+
+impl StreamingEngine {
+    fn push_samples(
+        &mut self,
+        samples: &[f32],
+    ) -> Result<Vec<StreamingSegment>, Box<dyn std::error::Error>> {
+        match self {
+            StreamingEngine::Nemotron(e) => e.push_samples(samples),
+            StreamingEngine::Qwen3(e) => e.push_samples(samples),
+        }
+    }
+
+    fn reset(&mut self) {
+        match self {
+            StreamingEngine::Nemotron(e) => e.reset(),
+            StreamingEngine::Qwen3(e) => e.reset(),
+        }
+    }
+}
 
 enum EngineSlot {
     Empty,
     Loading,
-    Ready(NemotronStreamingEngine),
+    Ready(StreamingEngine),
 }
 
 /// Manages the lifecycle of the streaming transcription engine.
-///
-/// Currently hardwired to `NemotronStreamingEngine` — the only streaming engine
-/// available. The `streaming_model` setting selects model weights, not engine type.
 pub struct StreamingManager {
     app_handle: AppHandle,
     model_manager: Arc<ModelManager>,
@@ -52,6 +76,13 @@ impl StreamingManager {
     /// Loads the streaming model into the engine slot in the background.
     /// Fire-and-forget — does not block.
     pub fn preload_model(&self, model_id: &str) {
+        // Resolve engine type before acquiring the slot lock — ModelManager is
+        // not Send and cannot move into the spawned thread.
+        let engine_type = self
+            .model_manager
+            .get_model_info(model_id)
+            .map(|info| info.engine_type);
+
         let model_path = {
             let mut slot = self.lock_engine_slot();
             match *slot {
@@ -76,9 +107,24 @@ impl StreamingManager {
 
         let handle = thread::spawn(move || {
             info!("Preloading streaming model: {}", model_id);
-            let mut engine = NemotronStreamingEngine::new();
-            match engine.load_model(&model_path) {
-                Ok(()) => {
+            let result = match engine_type {
+                Some(EngineType::Qwen3Streaming) => {
+                    let mut e = Qwen3StreamingEngine::new();
+                    let params = Qwen3StreamingModelParams {
+                        quantized: true,
+                        ..Default::default()
+                    };
+                    e.load_model_with_params(&model_path, params)
+                        .map(|()| StreamingEngine::Qwen3(e))
+                }
+                _ => {
+                    let mut e = NemotronStreamingEngine::new();
+                    e.load_model(&model_path)
+                        .map(|()| StreamingEngine::Nemotron(e))
+                }
+            };
+            match result {
+                Ok(engine) => {
                     info!("Streaming model loaded: {}", model_id);
                     let mut slot = engine_slot
                         .lock()
@@ -360,7 +406,7 @@ impl TextAccumulator {
 }
 
 fn streaming_loop(
-    mut engine: NemotronStreamingEngine,
+    mut engine: StreamingEngine,
     receiver: crossbeam_channel::Receiver<Vec<f32>>,
     stop: Arc<AtomicBool>,
     app_handle: AppHandle,

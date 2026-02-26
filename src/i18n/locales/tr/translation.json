@@ -129,7 +129,8 @@
       "languageOnly": "Yalnızca {{language}}"
     },
     "cancel": "İptal",
-    "cancelDownload": "İndirmeyi iptal et"
+    "cancelDownload": "İndirmeyi iptal et",
+    "streaming": "Streaming"
   },
   "settings": {
     "modelSettings": {
@@ -137,8 +138,8 @@
       "noSettingsNeeded": "Bu model yapılandırma gerektirmeden otomatik olarak çalışır."
     },
     "models": {
-      "title": "Transkripsiyon Modelleri",
-      "description": "Bir transkripsiyon modeli seçin veya ek modeller indirin. Farklı modeller değişen doğruluk ve hız seviyeleri sunar.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "downloaded": "İndirildi",
       "available": "İndirilebilir",
       "deleteConfirm": "{{modelName}} modelini silmek istediğinizden emin misiniz? Kullanmak için tekrar indirmeniz gerekecek.",
@@ -152,6 +153,9 @@
       },
       "noModelsMatch": "Bu filtreyle eşleşen model yok.",
       "yourModels": "İndirilen modeller",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "İndirilebilir"
     },
     "general": {
