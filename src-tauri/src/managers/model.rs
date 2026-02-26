@@ -559,6 +559,98 @@ impl ModelManager {
             },
         );
 
+        available_models.insert(
+            "qwen3-streaming-1.7b".to_string(),
+            ModelInfo {
+                id: "qwen3-streaming-1.7b".to_string(),
+                name: "Qwen3 ASR 1.7B Streaming".to_string(),
+                description: "Multilingual. Higher quality, slower. Used for live transcription preview.".to_string(),
+                filename: "qwen3-streaming-1.7b".to_string(),
+                url: None,
+                size_mb: 16000,
+                is_downloaded: false,
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: true,
+                engine_type: EngineType::Qwen3Streaming,
+                accuracy_score: 0.85,
+                speed_score: 0.40,
+                supports_translation: false,
+                is_recommended: false,
+                supported_languages: vec![
+                    "zh".to_string(),
+                    "en".to_string(),
+                    "ja".to_string(),
+                    "ko".to_string(),
+                    "yue".to_string(),
+                    "fr".to_string(),
+                    "de".to_string(),
+                    "es".to_string(),
+                    "pt".to_string(),
+                    "ru".to_string(),
+                    "it".to_string(),
+                    "ar".to_string(),
+                ],
+                is_custom: false,
+                files: vec![
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/encoder.onnx".to_string(),
+                        filename: "encoder.onnx".to_string(),
+                        size_bytes: 1_057_801,
+                        sha256: Some("7545855eecd21aa57f1da258eae60209e1200a3d8a25af8bb73596777644f610".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/encoder.onnx.data".to_string(),
+                        filename: "encoder.onnx.data".to_string(),
+                        size_bytes: 1_276_182_528,
+                        sha256: Some("b4232db39ddf6e157983e358a3b474bac62d68ebbb36edd1a64fa8bff5b691ce".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_init.onnx".to_string(),
+                        filename: "decoder_init.onnx".to_string(),
+                        size_bytes: 2_122_430,
+                        sha256: Some("d9b6cbb4875052823024eddfe93523efb77395184945af663fab32b91b8b0e03".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_init.onnx.data".to_string(),
+                        filename: "decoder_init.onnx.data".to_string(),
+                        size_bytes: 6_882_328_576,
+                        sha256: Some("3a590b6fa3efc91a31cc7c5a1206f976807daa88ab4b0c7a7ed38d13cd0a6ee1".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_step.onnx".to_string(),
+                        filename: "decoder_step.onnx".to_string(),
+                        size_bytes: 2_148_117,
+                        sha256: Some("1d22d908fbce347f73a26602af64e45430b6c7b71bc8c0f3d578ee542834fee8".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_step.onnx.data".to_string(),
+                        filename: "decoder_step.onnx.data".to_string(),
+                        size_bytes: 6_882_328_576,
+                        sha256: Some("9e7c616676d526e1c3d3da5644700258ce49b96d624ab4b64b0af65e0046e8da".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/embed_tokens.bin".to_string(),
+                        filename: "embed_tokens.bin".to_string(),
+                        size_bytes: 1_244_659_712,
+                        sha256: Some("cbf07af526ca4f37526ebe72f3146d3610c8a301a7c37b9153d92ef23f2688d7".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/tokenizer.json".to_string(),
+                        filename: "tokenizer.json".to_string(),
+                        size_bytes: 11_429_377,
+                        sha256: Some("bd2a97b55c8f7f9c328c73ee9b9178771037e9f566dfca8e238a063d41cbac92".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/config.json".to_string(),
+                        filename: "config.json".to_string(),
+                        size_bytes: 1_191,
+                        sha256: Some("50eb023f19723bb6d7e4242c3075015053a5a20ae7f5cec704075e758a4f5617".to_string()),
+                    },
+                ],
+            },
+        );
+
         // Auto-discover custom Whisper models (.bin files) in the models directory
         if let Err(e) = Self::discover_custom_whisper_models(&models_dir, &mut available_models) {
             warn!("Failed to discover custom models: {}", e);
