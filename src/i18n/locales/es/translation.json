@@ -129,7 +129,8 @@
       "languageOnly": "Solo {{language}}"
     },
     "cancel": "Cancelar",
-    "cancelDownload": "Cancelar descarga"
+    "cancelDownload": "Cancelar descarga",
+    "streaming": "Streaming"
   },
   "settings": {
     "modelSettings": {
@@ -137,8 +138,8 @@
       "noSettingsNeeded": "Este modelo funciona automáticamente sin necesidad de configuración."
     },
     "models": {
-      "title": "Modelos de Transcripción",
-      "description": "Selecciona un modelo de transcripción o descarga modelos adicionales. Diferentes modelos ofrecen distintos niveles de precisión y velocidad.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "downloaded": "Descargados",
       "available": "Disponibles para Descargar",
       "deleteConfirm": "¿Estás seguro de que deseas eliminar {{modelName}}? Necesitarás descargarlo de nuevo para usarlo.",
@@ -152,6 +153,9 @@
       },
       "noModelsMatch": "Ningún modelo coincide con este filtro.",
       "yourModels": "Modelos descargados",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "Disponibles para descargar"
     },
     "general": {
@@ -193,7 +197,8 @@
       },
       "pushToTalk": {
         "label": "Presionar para Hablar",
-        "description": "Mantén presionado para grabar, suelta para detener"
+        "description": "Mantén presionado para grabar, suelta para detener",
+        "disabledByLiveTyping": "Disabled while Live Typing is active. No keys can be held during recording."
       }
     },
     "sound": {
@@ -231,6 +236,12 @@
       "experimentalToggle": {
         "label": "Funciones Experimentales",
         "description": "Habilitar funciones experimentales que aún están en desarrollo."
+      },
+      "streamingToggle": {
+        "label": "Live Transcription Preview",
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model.",
+        "liveTypingLabel": "Live Typing",
+        "liveTypingDescription": "Type finalized sentences directly into the focused application in real-time. Batch transcription result is placed in the clipboard after recording stops."
       },
       "startHidden": {
         "label": "Iniciar Oculto",

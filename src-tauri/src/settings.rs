@@ -360,8 +360,6 @@ pub struct AppSettings {
     pub typing_tool: TypingTool,
     #[serde(default)]
     pub streaming_enabled: bool,
-    /// Not yet exposed to frontend — only one streaming model exists.
-    /// When additional models are added, add a change_streaming_model_setting command.
     #[serde(default = "default_streaming_model")]
     pub streaming_model: String,
     #[serde(default)]

@@ -305,6 +305,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_keyboard_implementation_setting,
         shortcut::get_keyboard_implementation,
         commands::streaming::change_streaming_enabled_setting,
+        commands::streaming::change_streaming_model_setting,
         commands::streaming::change_streaming_live_typing_setting,
         shortcut::change_show_tray_icon_setting,
         shortcut::handy_keys::start_handy_keys_recording,

@@ -347,12 +347,13 @@ impl TranscriptionManager {
                     })?;
                 LoadedEngine::SenseVoice(engine)
             }
-            EngineType::NemotronStreaming => {
-                // NemotronStreaming is managed exclusively by StreamingManager.
-                // Loading it here would risk dual ownership (~890 MB duplicated).
-                warn!("nemotron-streaming models cannot be used as the primary transcription engine; use StreamingManager instead");
+            EngineType::NemotronStreaming | EngineType::Qwen3Streaming => {
+                // Streaming models are managed exclusively by StreamingManager.
+                // Loading them here would risk dual ownership.
+                warn!("{} models cannot be used as the primary transcription engine; use StreamingManager instead", model_id);
                 return Err(anyhow::anyhow!(
-                    "nemotron-streaming is managed by StreamingManager"
+                    "{} is managed by StreamingManager",
+                    model_id
                 ));
             }
         };

@@ -133,6 +133,8 @@ const settingUpdaters: {
     commands.changeExperimentalEnabledSetting(value as boolean),
   streaming_enabled: (value) =>
     commands.changeStreamingEnabledSetting(value as boolean),
+  streaming_model: (value) =>
+    commands.changeStreamingModelSetting(value as string),
   streaming_live_typing: (value) =>
     commands.changeStreamingLiveTypingSetting(value as boolean),
   show_tray_icon: (value) =>

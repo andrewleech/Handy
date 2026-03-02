@@ -129,7 +129,8 @@
       "languageOnly": "Apenas {{language}}"
     },
     "cancel": "Cancelar",
-    "cancelDownload": "Cancelar download"
+    "cancelDownload": "Cancelar download",
+    "streaming": "Streaming"
   },
   "settings": {
     "modelSettings": {
@@ -175,12 +176,13 @@
       },
       "pushToTalk": {
         "label": "Pressionar para Falar",
-        "description": "Segure para gravar, solte para parar"
+        "description": "Segure para gravar, solte para parar",
+        "disabledByLiveTyping": "Disabled while Live Typing is active. No keys can be held during recording."
       }
     },
     "models": {
-      "title": "Modelos de Transcrição",
-      "description": "Selecione um modelo de transcrição ou baixe modelos adicionais. Diferentes modelos oferecem diferentes níveis de precisão e velocidade.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "downloaded": "Baixados",
       "available": "Disponíveis para Download",
       "deleteConfirm": "Tem certeza de que deseja excluir {{modelName}}? Você precisará baixá-lo novamente para usá-lo.",
@@ -194,6 +196,9 @@
       },
       "noModelsMatch": "Nenhum modelo corresponde a este filtro.",
       "yourModels": "Modelos baixados",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "Disponíveis para download"
     },
     "sound": {
@@ -231,6 +236,12 @@
       "experimentalToggle": {
         "label": "Recursos Experimentais",
         "description": "Ativar recursos experimentais que ainda estão em desenvolvimento."
+      },
+      "streamingToggle": {
+        "label": "Live Transcription Preview",
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model.",
+        "liveTypingLabel": "Live Typing",
+        "liveTypingDescription": "Type finalized sentences directly into the focused application in real-time. Batch transcription result is placed in the clipboard after recording stops."
       },
       "startHidden": {
         "label": "Iniciar Oculto",

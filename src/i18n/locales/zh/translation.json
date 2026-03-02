@@ -129,7 +129,8 @@
       "languageOnly": "仅 {{language}}"
     },
     "cancel": "取消",
-    "cancelDownload": "取消下载"
+    "cancelDownload": "取消下载",
+    "streaming": "Streaming"
   },
   "settings": {
     "modelSettings": {
@@ -137,8 +138,8 @@
       "noSettingsNeeded": "此模型自动运行，无需配置。"
     },
     "models": {
-      "title": "转录模型",
-      "description": "选择转录模型或下载其他模型。不同模型提供不同的准确度和速度。",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "downloaded": "已下载",
       "available": "可下载",
       "deleteConfirm": "确定要删除 {{modelName}} 吗？您需要重新下载才能使用。",
@@ -152,6 +153,9 @@
       },
       "noModelsMatch": "没有符合此筛选条件的模型。",
       "yourModels": "已下载的模型",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "可供下载"
     },
     "general": {
@@ -193,7 +197,8 @@
       },
       "pushToTalk": {
         "label": "按住说话",
-        "description": "按住录制，松开停止"
+        "description": "按住录制，松开停止",
+        "disabledByLiveTyping": "Disabled while Live Typing is active. No keys can be held during recording."
       }
     },
     "sound": {
@@ -231,6 +236,12 @@
       "experimentalToggle": {
         "label": "实验性功能",
         "description": "启用仍在开发中的实验性功能。"
+      },
+      "streamingToggle": {
+        "label": "Live Transcription Preview",
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model.",
+        "liveTypingLabel": "Live Typing",
+        "liveTypingDescription": "Type finalized sentences directly into the focused application in real-time. Batch transcription result is placed in the clipboard after recording stops."
       },
       "startHidden": {
         "label": "隐藏启动",

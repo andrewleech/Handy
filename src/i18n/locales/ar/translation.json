@@ -122,6 +122,7 @@
     "downloadSpeed": "{{speed}} ميجابايت/ث",
     "cancel": "إلغاء",
     "cancelDownload": "إلغاء التنزيل",
+    "streaming": "Streaming",
     "capabilities": {
       "languageSelection": "يدعم اختيار اللغة",
       "singleLanguage": "يدعم هذه اللغة فقط",
@@ -171,7 +172,8 @@
       },
       "pushToTalk": {
         "label": "اضغط للتحدث",
-        "description": "استمر في الضغط للتسجيل، واترك للتوقف"
+        "description": "استمر في الضغط للتسجيل، واترك للتوقف",
+        "disabledByLiveTyping": "Disabled while Live Typing is active. No keys can be held during recording."
       }
     },
     "sound": {
@@ -209,6 +211,12 @@
       "experimentalToggle": {
         "label": "الميزات التجريبية",
         "description": ".تمكين الميزات التجريبية التي لا تزال قيد التطوير"
+      },
+      "streamingToggle": {
+        "label": "Live Transcription Preview",
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model.",
+        "liveTypingLabel": "Live Typing",
+        "liveTypingDescription": "Type finalized sentences directly into the focused application in real-time. Batch transcription result is placed in the clipboard after recording stops."
       },
       "startHidden": {
         "label": "بدء مخفي",
@@ -472,9 +480,12 @@
       "noSettingsNeeded": "لا توجد إعدادات مطلوبة لهذا النموذج"
     },
     "models": {
-      "title": "نماذج النسخ",
-      "description": "اختر نموذج نسخ أو قم بتنزيل نماذج إضافية. تقدم النماذج المختلفة مستويات متفاوتة من الدقة والسرعة.",
+      "title": "Models",
+      "description": "Download and manage transcription and streaming models.",
       "yourModels": "النماذج المحمّلة",
+      "transcriptionModels": "Transcription",
+      "streamingModels": "Streaming",
+      "streamingDisabledHint": "Enable Live Transcription Preview in Advanced settings to select a streaming model.",
       "availableModels": "متاح للتنزيل",
       "downloaded": "تم التنزيل",
       "available": "متاح للتنزيل",
