@@ -23,6 +23,13 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 # name = "cli"
 # path = "src/audio_toolkit/bin/cli.rs"
 
+[features]
+default = []
+gpu-directml = ["transcribe-rs/directml"]
+gpu-cuda = ["transcribe-rs/cuda"]
+gpu-coreml = ["transcribe-rs/coreml"]
+webgpu = ["transcribe-rs/webgpu"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 serde_json = "1"
@@ -69,7 +76,7 @@ rusqlite = { version = "0.37", features = ["bundled"] }
 tar = "0.4.44"
 flate2 = "1.0"
 # TODO: Switch to upstream once streaming support is merged (fork: andrewleech/transcribe-rs)
-transcribe-rs = { git = "https://github.com/andrewleech/transcribe-rs", branch = "feat/qwen3-streaming-engine", features = ["whisper", "parakeet", "moonshine", "sense_voice", "nemotron-streaming", "qwen3-streaming"] }
+transcribe-rs = { git = "https://github.com/andrewleech/transcribe-rs", branch = "feat/gpu-providers", features = ["whisper", "parakeet", "moonshine", "sense_voice", "nemotron-streaming", "qwen3-streaming"] }
 crossbeam-channel = "0.5"
 handy-keys = "0.2.0"
 ferrous-opencc = "0.2.3"

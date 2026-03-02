@@ -249,9 +249,21 @@ impl StreamingManager {
     }
 
     /// Releases the streaming engine, freeing its memory.
-    /// Stops any active streaming session first.
+    /// Stops any active streaming session first, then waits for any
+    /// in-progress preload to finish before clearing the slot.
     pub fn unload_engine(&self) {
         self.stop_streaming();
+        // Wait for any in-progress preload thread to complete so we don't
+        // end up with concurrent model loads if a new preload starts right after.
+        {
+            let mut handle_guard = self
+                .preload_handle
+                .lock()
+                .unwrap_or_else(|p| p.into_inner());
+            if let Some(prev) = handle_guard.take() {
+                let _ = prev.join();
+            }
+        }
         let mut slot = self.lock_engine_slot();
         *slot = EngineSlot::Empty;
     }
