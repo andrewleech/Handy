@@ -193,7 +193,8 @@
       },
       "pushToTalk": {
         "label": "Stisk a mluv",
-        "description": "Podržte pro nahrávání, uvolněte pro zastavení"
+        "description": "Podržte pro nahrávání, uvolněte pro zastavení",
+        "disabledByLiveTyping": "Disabled while Live Typing is active. No keys can be held during recording."
       }
     },
     "sound": {
@@ -231,6 +232,12 @@
       "experimentalToggle": {
         "label": "Experimentální funkce",
         "description": "Povolit experimentální funkce, které jsou stále ve vývoji."
+      },
+      "streamingToggle": {
+        "label": "Live Transcription Preview",
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model.",
+        "liveTypingLabel": "Live Typing",
+        "liveTypingDescription": "Type finalized sentences directly into the focused application in real-time. Batch transcription result is placed in the clipboard after recording stops."
       },
       "startHidden": {
         "label": "Spouštět skrytě",

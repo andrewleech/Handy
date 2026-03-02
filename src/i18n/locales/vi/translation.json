@@ -193,7 +193,8 @@
       },
       "pushToTalk": {
         "label": "Nhấn để nói",
-        "description": "Giữ để ghi âm, thả để dừng"
+        "description": "Giữ để ghi âm, thả để dừng",
+        "disabledByLiveTyping": "Disabled while Live Typing is active. No keys can be held during recording."
       }
     },
     "sound": {
@@ -231,6 +232,12 @@
       "experimentalToggle": {
         "label": "Tính năng thử nghiệm",
         "description": "Bật các tính năng thử nghiệm đang trong quá trình phát triển."
+      },
+      "streamingToggle": {
+        "label": "Live Transcription Preview",
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model.",
+        "liveTypingLabel": "Live Typing",
+        "liveTypingDescription": "Type finalized sentences directly into the focused application in real-time. Batch transcription result is placed in the clipboard after recording stops."
       },
       "startHidden": {
         "label": "Khởi động ẩn",

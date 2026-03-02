@@ -19,9 +19,6 @@ use specta::Type;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_autostart::ManagerExt;
 
-use std::sync::Arc;
-
-use crate::managers::streaming::StreamingManager;
 use crate::settings::{
     self, get_settings, AutoSubmitKey, ClipboardHandling, KeyboardImplementation, LLMPrompt,
     OverlayPosition, PasteMethod, ShortcutBinding, SoundTheme, TypingTool,

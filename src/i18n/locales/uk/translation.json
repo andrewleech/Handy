@@ -175,7 +175,8 @@
       },
       "pushToTalk": {
         "label": "Утримувати для запису (Push To Talk)",
-        "description": "Утримуйте для запису, відпустіть для зупинки"
+        "description": "Утримуйте для запису, відпустіть для зупинки",
+        "disabledByLiveTyping": "Disabled while Live Typing is active. No keys can be held during recording."
       }
     },
     "models": {
@@ -231,6 +232,12 @@
       "experimentalToggle": {
         "label": "Експериментальні функції",
         "description": "Увімкнути експериментальні функції, які ще в розробці."
+      },
+      "streamingToggle": {
+        "label": "Live Transcription Preview",
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model.",
+        "liveTypingLabel": "Live Typing",
+        "liveTypingDescription": "Type finalized sentences directly into the focused application in real-time. Batch transcription result is placed in the clipboard after recording stops."
       },
       "startHidden": {
         "label": "Запуск у фоні",

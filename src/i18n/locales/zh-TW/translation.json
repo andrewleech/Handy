@@ -175,7 +175,8 @@
       },
       "pushToTalk": {
         "label": "按住說話",
-        "description": "按住錄製，放開停止"
+        "description": "按住錄製，放開停止",
+        "disabledByLiveTyping": "Disabled while Live Typing is active. No keys can be held during recording."
       }
     },
     "models": {
@@ -231,6 +232,12 @@
       "experimentalToggle": {
         "label": "實驗性功能",
         "description": "啟用仍在開發中的實驗性功能"
+      },
+      "streamingToggle": {
+        "label": "Live Transcription Preview",
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model.",
+        "liveTypingLabel": "Live Typing",
+        "liveTypingDescription": "Type finalized sentences directly into the focused application in real-time. Batch transcription result is placed in the clipboard after recording stops."
       },
       "startHidden": {
         "label": "隱藏啟動",
