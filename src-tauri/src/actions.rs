@@ -8,18 +8,22 @@ use crate::managers::transcription::TranscriptionManager;
 use crate::settings::{get_settings, AppSettings, APPLE_INTELLIGENCE_PROVIDER_ID};
 use crate::shortcut;
 use crate::tray::{change_tray_icon, TrayIconState};
+use crate::live_typing_listener::{LiveTypingListenerState, LiveTypingStopListener};
 use crate::utils::{
-    self, show_processing_overlay, show_recording_overlay, show_transcribing_overlay,
+    self, show_preparing_overlay, show_processing_overlay, show_recording_overlay,
+    show_transcribing_overlay,
 };
 use crate::TranscriptionCoordinator;
 use ferrous_opencc::{config::BuiltinConfig, OpenCC};
 use log::{debug, error, warn};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 use tauri::AppHandle;
 use tauri::Manager;
+use tauri_plugin_clipboard_manager::ClipboardExt;
 
 /// Drop guard that notifies the [`TranscriptionCoordinator`] when the
 /// transcription pipeline finishes — whether it completes normally or panics.
@@ -41,6 +45,17 @@ pub trait ShortcutAction: Send + Sync {
 // Transcribe Action
 struct TranscribeAction {
     post_process: bool,
+    // --- Per-session mutable state on a global singleton ---
+    // Safe because TranscriptionCoordinator serializes all start()/stop()
+    // pairs: stop(N) completes before start(N+1) begins. Only one logical
+    // session accesses these at a time. If serialization changes, move to
+    // a per-session struct.
+    //
+    // live_typing_active: Relaxed — no concurrent access (coordinator).
+    // stop_requested: Release/Acquire — coordinates main thread (stop)
+    // with the spawned poll thread (start).
+    live_typing_active: AtomicBool,
+    stop_requested: Arc<AtomicBool>,
 }
 
 /// Field name for structured output JSON schema
@@ -314,20 +329,31 @@ impl ShortcutAction for TranscribeAction {
         let start_time = Instant::now();
         debug!("TranscribeAction::start called for binding: {}", binding_id);
 
+        self.stop_requested.store(false, Ordering::Release);
+
         // Load model in the background
         let tm = app.state::<Arc<TranscriptionManager>>();
         tm.initiate_model_load();
 
         let binding_id = binding_id.to_string();
         change_tray_icon(app, TrayIconState::Recording);
-        show_recording_overlay(app);
 
         let rm = app.state::<Arc<AudioRecordingManager>>();
 
         // Get the microphone mode to determine audio feedback timing
         let settings = get_settings(app);
         let is_always_on = settings.always_on_microphone;
+        let is_live_typing_mode = settings.streaming_enabled
+            && settings.streaming_live_typing
+            && !settings.always_on_microphone;
+        self.live_typing_active
+            .store(is_live_typing_mode, Ordering::Relaxed);
         debug!("Microphone mode - always_on: {}", is_always_on);
+
+        // Show overlay — deferred when live typing + model not ready
+        if !is_live_typing_mode {
+            show_recording_overlay(app);
+        }
 
         let mut recording_started = false;
         if is_always_on {
@@ -370,11 +396,51 @@ impl ShortcutAction for TranscribeAction {
 
         if recording_started {
             // Start streaming preview if enabled
-            let settings = get_settings(app);
             if settings.streaming_enabled {
                 let sm = app.state::<Arc<StreamingManager>>();
-                if let Some(channel) = sm.start_streaming() {
+                let live_typing = settings.streaming_live_typing;
+
+                if let Some(channel) = sm.start_streaming(live_typing) {
                     rm.set_streaming_channel(Some(channel));
+                    if is_live_typing_mode {
+                        show_recording_overlay(app); // Model was ready
+                    }
+                } else if is_live_typing_mode {
+                    // Model not ready — show preparing overlay, poll until ready
+                    show_preparing_overlay(app);
+
+                    let sm_poll = Arc::clone(&sm);
+                    let rm_poll = Arc::clone(&rm);
+                    let app_poll = app.clone();
+                    let live_typing_captured = live_typing;
+                    let stop_req = self.stop_requested.clone();
+                    // Accepted race: the poll thread may call start_streaming() after
+                    // stop() has run stop_streaming(). start_streaming() calls
+                    // stop_streaming() internally as a no-op, then starts a new
+                    // session that stop() will immediately tear down. The
+                    // TranscriptionCoordinator ensures no two start/stop pairs overlap.
+                    std::thread::spawn(move || {
+                        if let Some(channel) = sm_poll.start_streaming_when_ready(
+                            live_typing_captured,
+                            Duration::from_secs(30),
+                            || !rm_poll.is_recording() || stop_req.load(Ordering::Acquire),
+                        ) {
+                            rm_poll.set_streaming_channel(Some(channel));
+                            show_recording_overlay(&app_poll);
+                        } else if rm_poll.is_recording() {
+                            warn!("Streaming engine not available, falling back to batch");
+                            show_recording_overlay(&app_poll);
+                        }
+                    });
+                }
+            }
+
+            // Start the stop listener (for live typing)
+            if is_live_typing_mode {
+                let listener =
+                    LiveTypingStopListener::spawn(app.clone(), binding_id.clone());
+                if let Some(state) = app.try_state::<LiveTypingListenerState>() {
+                    *state.0.lock().unwrap_or_else(|p| p.into_inner()) = Some(listener);
                 }
             }
 
@@ -389,8 +455,13 @@ impl ShortcutAction for TranscribeAction {
     }
 
     fn stop(&self, app: &AppHandle, binding_id: &str, _shortcut_str: &str) {
+        self.stop_requested.store(true, Ordering::Release);
+
         // Unregister the cancel shortcut when transcription stops
         shortcut::unregister_cancel_shortcut(app);
+
+        // Stop the live typing key listener (if active)
+        utils::stop_live_typing(app);
 
         let stop_time = Instant::now();
         debug!("TranscribeAction::stop called for binding: {}", binding_id);
@@ -412,6 +483,8 @@ impl ShortcutAction for TranscribeAction {
 
         let binding_id = binding_id.to_string(); // Clone binding_id for the async task
         let post_process = self.post_process;
+        let live_typing_active = self.live_typing_active.load(Ordering::Relaxed);
+        self.live_typing_active.store(false, Ordering::Relaxed);
 
         tauri::async_runtime::spawn(async move {
             let _guard = FinishGuard(ah.clone());
@@ -421,12 +494,15 @@ impl ShortcutAction for TranscribeAction {
                 binding_id
             );
 
-            // Stop streaming and clear the channel before batch transcription.
-            // Use block_in_place because stop_streaming() joins a thread.
+            // Stop streaming. Use block_in_place because stop_streaming joins a thread.
             tokio::task::block_in_place(|| {
                 sm.stop_streaming();
                 rm.set_streaming_channel(None);
             });
+
+            // With immediate live typing, fragments were typed as they arrived.
+            // Remaining fragments are flushed synchronously when the streaming
+            // loop exits (see streaming_loop in streaming.rs).
 
             let stop_recording_time = Instant::now();
             if let Some(samples) = rm.stop_recording(&binding_id) {
@@ -504,26 +580,34 @@ impl ShortcutAction for TranscribeAction {
                                 }
                             });
 
-                            // Paste the final text (either processed or original)
-                            let ah_clone = ah.clone();
-                            let paste_time = Instant::now();
-                            ah.run_on_main_thread(move || {
-                                match utils::paste(final_text, ah_clone.clone()) {
-                                    Ok(()) => debug!(
-                                        "Text pasted successfully in {:?}",
-                                        paste_time.elapsed()
-                                    ),
-                                    Err(e) => error!("Failed to paste transcription: {}", e),
-                                }
-                                // Hide the overlay after transcription is complete
-                                utils::hide_recording_overlay(&ah_clone);
-                                change_tray_icon(&ah_clone, TrayIconState::Idle);
-                            })
-                            .unwrap_or_else(|e| {
-                                error!("Failed to run paste on main thread: {:?}", e);
+                            if live_typing_active {
+                                // Batch result goes to clipboard for optional manual paste
+                                let clipboard = ah.clipboard();
+                                let _ = clipboard.write_text(&final_text);
                                 utils::hide_recording_overlay(&ah);
                                 change_tray_icon(&ah, TrayIconState::Idle);
-                            });
+                            } else {
+                                // Paste the final text (either processed or original)
+                                let ah_clone = ah.clone();
+                                let paste_time = Instant::now();
+                                ah.run_on_main_thread(move || {
+                                    match utils::paste(final_text, ah_clone.clone()) {
+                                        Ok(()) => debug!(
+                                            "Text pasted successfully in {:?}",
+                                            paste_time.elapsed()
+                                        ),
+                                        Err(e) => error!("Failed to paste transcription: {}", e),
+                                    }
+                                    // Hide the overlay after transcription is complete
+                                    utils::hide_recording_overlay(&ah_clone);
+                                    change_tray_icon(&ah_clone, TrayIconState::Idle);
+                                })
+                                .unwrap_or_else(|e| {
+                                    error!("Failed to run paste on main thread: {:?}", e);
+                                    utils::hide_recording_overlay(&ah);
+                                    change_tray_icon(&ah, TrayIconState::Idle);
+                                });
+                            }
                         } else {
                             utils::hide_recording_overlay(&ah);
                             change_tray_icon(&ah, TrayIconState::Idle);
@@ -592,11 +676,17 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
         "transcribe".to_string(),
         Arc::new(TranscribeAction {
             post_process: false,
+            live_typing_active: AtomicBool::new(false),
+            stop_requested: Arc::new(AtomicBool::new(false)),
         }) as Arc<dyn ShortcutAction>,
     );
     map.insert(
         "transcribe_with_post_process".to_string(),
-        Arc::new(TranscribeAction { post_process: true }) as Arc<dyn ShortcutAction>,
+        Arc::new(TranscribeAction {
+            post_process: true,
+            live_typing_active: AtomicBool::new(false),
+            stop_requested: Arc::new(AtomicBool::new(false)),
+        }) as Arc<dyn ShortcutAction>,
     );
     map.insert(
         "cancel".to_string(),

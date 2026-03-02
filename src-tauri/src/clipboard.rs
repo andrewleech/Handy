@@ -564,6 +564,28 @@ fn should_send_auto_submit(auto_submit: bool, paste_method: PasteMethod) -> bool
     auto_submit && paste_method != PasteMethod::None
 }
 
+/// Types text directly into the focused application using enigo.text().
+///
+/// With the momentary-trigger approach (no keys held during recording),
+/// enigo.text() works reliably. On Windows it sends KEYEVENTF_UNICODE
+/// (VK_PACKET / 0xE7) events which handy-keys' vk_to_key() doesn't map,
+/// so the live-typing stop listener never sees these as physical input.
+pub fn type_text_direct(app_handle: &AppHandle, text: &str) -> Result<(), String> {
+    let enigo_state = app_handle
+        .try_state::<EnigoState>()
+        .ok_or("Enigo state not initialized")?;
+    let mut enigo = enigo_state
+        .0
+        .lock()
+        .map_err(|e| format!("Failed to lock Enigo: {}", e))?;
+    paste_direct(
+        &mut enigo,
+        text,
+        #[cfg(target_os = "linux")]
+        get_settings(app_handle).typing_tool,
+    )
+}
+
 pub fn paste(text: String, app_handle: AppHandle) -> Result<(), String> {
     let settings = get_settings(&app_handle);
     let paste_method = settings.paste_method;

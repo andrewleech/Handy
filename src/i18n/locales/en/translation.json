@@ -175,7 +175,8 @@
       },
       "pushToTalk": {
         "label": "Push To Talk",
-        "description": "Hold to record, release to stop"
+        "description": "Hold to record, release to stop",
+        "disabledByLiveTyping": "Disabled while Live Typing is active. No keys can be held during recording."
       }
     },
     "models": {
@@ -234,7 +235,9 @@
       },
       "streamingToggle": {
         "label": "Live Transcription Preview",
-        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model."
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model.",
+        "liveTypingLabel": "Live Typing",
+        "liveTypingDescription": "Type finalized sentences directly into the focused application in real-time. Batch transcription result is placed in the clipboard after recording stops."
       },
       "startHidden": {
         "label": "Start Hidden",
@@ -545,6 +548,7 @@
   },
   "overlay": {
     "transcribing": "Transcribing...",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "preparing": "Preparing..."
   }
 }

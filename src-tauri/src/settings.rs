@@ -364,6 +364,8 @@ pub struct AppSettings {
     /// When additional models are added, add a change_streaming_model_setting command.
     #[serde(default = "default_streaming_model")]
     pub streaming_model: String,
+    #[serde(default)]
+    pub streaming_live_typing: bool,
 }
 
 fn default_model() -> String {
@@ -725,6 +727,7 @@ pub fn get_default_settings() -> AppSettings {
         typing_tool: default_typing_tool(),
         streaming_enabled: false,
         streaming_model: default_streaming_model(),
+        streaming_live_typing: false,
     }
 }
 
@@ -875,4 +878,5 @@ mod tests {
         assert!(!settings.streaming_enabled);
         assert_eq!(settings.streaming_model, "nemotron-streaming");
     }
+
 }

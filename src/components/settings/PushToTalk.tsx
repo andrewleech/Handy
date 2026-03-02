@@ -14,14 +14,22 @@ export const PushToTalk: React.FC<PushToTalkProps> = React.memo(
     const { getSetting, updateSetting, isUpdating } = useSettings();
 
     const pttEnabled = getSetting("push_to_talk") || false;
+    const liveTypingActive =
+      (getSetting("streaming_enabled") || false) &&
+      (getSetting("streaming_live_typing") || false);
 
     return (
       <ToggleSwitch
         checked={pttEnabled}
         onChange={(enabled) => updateSetting("push_to_talk", enabled)}
         isUpdating={isUpdating("push_to_talk")}
+        disabled={liveTypingActive}
         label={t("settings.general.pushToTalk.label")}
-        description={t("settings.general.pushToTalk.description")}
+        description={
+          liveTypingActive
+            ? t("settings.general.pushToTalk.disabledByLiveTyping")
+            : t("settings.general.pushToTalk.description")
+        }
         descriptionMode={descriptionMode}
         grouped={grouped}
       />
