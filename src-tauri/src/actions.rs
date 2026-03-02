@@ -3,6 +3,7 @@ use crate::apple_intelligence;
 use crate::audio_feedback::{play_feedback_sound, play_feedback_sound_blocking, SoundType};
 use crate::managers::audio::AudioRecordingManager;
 use crate::managers::history::HistoryManager;
+use crate::managers::streaming::StreamingManager;
 use crate::managers::transcription::TranscriptionManager;
 use crate::settings::{get_settings, AppSettings, APPLE_INTELLIGENCE_PROVIDER_ID};
 use crate::shortcut;
@@ -368,6 +369,15 @@ impl ShortcutAction for TranscribeAction {
         }
 
         if recording_started {
+            // Start streaming preview if enabled
+            let settings = get_settings(app);
+            if settings.streaming_enabled {
+                let sm = app.state::<Arc<StreamingManager>>();
+                if let Some(channel) = sm.start_streaming() {
+                    rm.set_streaming_channel(Some(channel));
+                }
+            }
+
             // Dynamically register the cancel shortcut in a separate task to avoid deadlock
             shortcut::register_cancel_shortcut(app);
         }
@@ -389,6 +399,7 @@ impl ShortcutAction for TranscribeAction {
         let rm = Arc::clone(&app.state::<Arc<AudioRecordingManager>>());
         let tm = Arc::clone(&app.state::<Arc<TranscriptionManager>>());
         let hm = Arc::clone(&app.state::<Arc<HistoryManager>>());
+        let sm = Arc::clone(&app.state::<Arc<StreamingManager>>());
 
         change_tray_icon(app, TrayIconState::Transcribing);
         show_transcribing_overlay(app);
@@ -409,6 +420,13 @@ impl ShortcutAction for TranscribeAction {
                 "Starting async transcription task for binding: {}",
                 binding_id
             );
+
+            // Stop streaming and clear the channel before batch transcription.
+            // Use block_in_place because stop_streaming() joins a thread.
+            tokio::task::block_in_place(|| {
+                sm.stop_streaming();
+                rm.set_streaming_channel(None);
+            });
 
             let stop_recording_time = Instant::now();
             if let Some(samples) = rm.stop_recording(&binding_id) {

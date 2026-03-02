@@ -12,10 +12,7 @@ use std::time::{Duration, SystemTime};
 use tauri::{AppHandle, Emitter};
 use transcribe_rs::{
     engines::{
-        moonshine::{
-            ModelVariant, MoonshineEngine, MoonshineModelParams, MoonshineStreamingEngine,
-            StreamingModelParams,
-        },
+        moonshine::{ModelVariant, MoonshineEngine, MoonshineModelParams},
         parakeet::{
             ParakeetEngine, ParakeetInferenceParams, ParakeetModelParams, TimestampGranularity,
         },
@@ -40,8 +37,9 @@ enum LoadedEngine {
     Whisper(WhisperEngine),
     Parakeet(ParakeetEngine),
     Moonshine(MoonshineEngine),
-    MoonshineStreaming(MoonshineStreamingEngine),
+    MoonshineStreaming(MoonshineEngine),
     SenseVoice(SenseVoiceEngine),
+    // NemotronStreaming is managed exclusively by StreamingManager — see preload_model guard.
 }
 
 #[derive(Clone)]
@@ -305,9 +303,12 @@ impl TranscriptionManager {
                 LoadedEngine::Moonshine(engine)
             }
             EngineType::MoonshineStreaming => {
-                let mut engine = MoonshineStreamingEngine::new();
+                let mut engine = MoonshineEngine::new();
                 engine
-                    .load_model_with_params(&model_path, StreamingModelParams::default())
+                    .load_model_with_params(
+                        &model_path,
+                        MoonshineModelParams::variant(ModelVariant::Base),
+                    )
                     .map_err(|e| {
                         let error_msg = format!(
                             "Failed to load moonshine streaming model {}: {}",
@@ -345,6 +346,14 @@ impl TranscriptionManager {
                         anyhow::anyhow!(error_msg)
                     })?;
                 LoadedEngine::SenseVoice(engine)
+            }
+            EngineType::NemotronStreaming => {
+                // NemotronStreaming is managed exclusively by StreamingManager.
+                // Loading it here would risk dual ownership (~890 MB duplicated).
+                warn!("nemotron-streaming models cannot be used as the primary transcription engine; use StreamingManager instead");
+                return Err(anyhow::anyhow!(
+                    "nemotron-streaming is managed by StreamingManager"
+                ));
             }
         };
 

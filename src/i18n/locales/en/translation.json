@@ -232,6 +232,10 @@
         "label": "Experimental Features",
         "description": "Enable experimental features that are still in development."
       },
+      "streamingToggle": {
+        "label": "Live Transcription Preview",
+        "description": "Show real-time transcription text in the recording overlay during recording. Requires the Nemotron Streaming model."
+      },
       "startHidden": {
         "label": "Start Hidden",
         "description": "Launch to system tray without opening the window."

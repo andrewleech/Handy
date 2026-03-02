@@ -27,6 +27,7 @@ use env_filter::Builder as EnvFilterBuilder;
 use managers::audio::AudioRecordingManager;
 use managers::history::HistoryManager;
 use managers::model::ModelManager;
+use managers::streaming::StreamingManager;
 use managers::transcription::TranscriptionManager;
 #[cfg(unix)]
 use signal_hook::consts::{SIGUSR1, SIGUSR2};
@@ -122,12 +123,22 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     );
     let history_manager =
         Arc::new(HistoryManager::new(app_handle).expect("Failed to initialize history manager"));
+    let streaming_manager = Arc::new(StreamingManager::new(app_handle, model_manager.clone()));
 
     // Add managers to Tauri's managed state
     app_handle.manage(recording_manager.clone());
     app_handle.manage(model_manager.clone());
     app_handle.manage(transcription_manager.clone());
     app_handle.manage(history_manager.clone());
+    app_handle.manage(streaming_manager.clone());
+
+    // Read settings once for startup configuration
+    let startup_settings = settings::get_settings(app_handle);
+
+    // If streaming is enabled, preload the streaming model in the background
+    if startup_settings.streaming_enabled {
+        streaming_manager.preload_model(&startup_settings.streaming_model);
+    }
 
     // Note: Shortcuts are NOT initialized here.
     // The frontend is responsible for calling the `initialize_shortcuts` command
@@ -142,11 +153,8 @@ fn initialize_core_logic(app_handle: &AppHandle) {
 
     // Apply macOS Accessory policy if starting hidden
     #[cfg(target_os = "macos")]
-    {
-        let settings = settings::get_settings(app_handle);
-        if settings.start_hidden {
-            let _ = app_handle.set_activation_policy(tauri::ActivationPolicy::Accessory);
-        }
+    if startup_settings.start_hidden {
+        let _ = app_handle.set_activation_policy(tauri::ActivationPolicy::Accessory);
     }
     // Get the current theme to set the appropriate initial icon
     let initial_theme = tray::get_current_theme(app_handle);
@@ -295,6 +303,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_update_checks_setting,
         shortcut::change_keyboard_implementation_setting,
         shortcut::get_keyboard_implementation,
+        shortcut::change_streaming_enabled_setting,
         shortcut::change_show_tray_icon_setting,
         shortcut::handy_keys::start_handy_keys_recording,
         shortcut::handy_keys::stop_handy_keys_recording,

@@ -1,4 +1,6 @@
-use crate::audio_toolkit::{list_input_devices, vad::SmoothedVad, AudioRecorder, SileroVad};
+use crate::audio_toolkit::{
+    list_input_devices, vad::SmoothedVad, AudioRecorder, SileroVad, StreamingAudioChannel,
+};
 use crate::helpers::clamshell;
 use crate::settings::{get_settings, AppSettings};
 use crate::utils;
@@ -358,6 +360,14 @@ impl AudioRecordingManager {
             false
         } else {
             false
+        }
+    }
+
+    /// Sets (or clears) the streaming channel on the underlying AudioRecorder.
+    /// Delivered via the command channel so it takes effect on the running worker thread.
+    pub fn set_streaming_channel(&self, channel: Option<Arc<StreamingAudioChannel>>) {
+        if let Some(rec) = self.recorder.lock().unwrap().as_ref() {
+            rec.set_streaming_channel(channel);
         }
     }
 

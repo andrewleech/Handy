@@ -30,8 +30,13 @@ tauri_panel! {
     })
 }
 
-const OVERLAY_WIDTH: f64 = 172.0;
-const OVERLAY_HEIGHT: f64 = 36.0;
+// Window sized to the maximum needed mode (streaming text preview).
+// Non-streaming content (audio bars) renders smaller via CSS within the
+// transparent window. The transparent area is minimal (300×60) and the
+// window needs click events for the cancel button, so
+// ignore_cursor_events is intentionally not set.
+const OVERLAY_WIDTH: f64 = 300.0;
+const OVERLAY_HEIGHT: f64 = 60.0;
 
 #[cfg(target_os = "macos")]
 const OVERLAY_TOP_OFFSET: f64 = 46.0;

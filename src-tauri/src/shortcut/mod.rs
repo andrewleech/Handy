@@ -19,6 +19,9 @@ use specta::Type;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_autostart::ManagerExt;
 
+use std::sync::Arc;
+
+use crate::managers::streaming::StreamingManager;
 use crate::settings::{
     self, get_settings, AutoSubmitKey, ClipboardHandling, KeyboardImplementation, LLMPrompt,
     OverlayPosition, PasteMethod, ShortcutBinding, SoundTheme, TypingTool,
@@ -1036,6 +1039,24 @@ pub fn change_app_language_setting(app: AppHandle, language: String) -> Result<(
 
     // Refresh the tray menu with the new language
     tray::update_tray_menu(&app, &tray::TrayIconState::Idle, Some(&language));
+
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_streaming_enabled_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.streaming_enabled = enabled;
+    let streaming_model = settings.streaming_model.clone();
+    settings::write_settings(&app, settings);
+
+    // If enabling, trigger background preload of the streaming model
+    if enabled {
+        if let Some(sm) = app.try_state::<Arc<StreamingManager>>() {
+            sm.preload_model(&streaming_model);
+        }
+    }
 
     Ok(())
 }

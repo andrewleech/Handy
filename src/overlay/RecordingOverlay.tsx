@@ -18,7 +18,9 @@ const RecordingOverlay: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [state, setState] = useState<OverlayState>("recording");
   const [levels, setLevels] = useState<number[]>(Array(16).fill(0));
+  const [streamingText, setStreamingText] = useState("");
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
+  const scrollRef = useRef<HTMLDivElement>(null);
   const direction = getLanguageDirection(i18n.language);
 
   useEffect(() => {
@@ -29,12 +31,14 @@ const RecordingOverlay: React.FC = () => {
         await syncLanguageFromSettings();
         const overlayState = event.payload as OverlayState;
         setState(overlayState);
+        setStreamingText("");
         setIsVisible(true);
       });
 
       // Listen for hide-overlay event from Rust
       const unlistenHide = await listen("hide-overlay", () => {
         setIsVisible(false);
+        setStreamingText("");
       });
 
       // Listen for mic-level updates
@@ -51,16 +55,32 @@ const RecordingOverlay: React.FC = () => {
         setLevels(smoothed.slice(0, 9));
       });
 
+      // Listen for streaming text updates
+      const unlistenStreaming = await listen<string>(
+        "streaming-text",
+        (event) => {
+          setStreamingText(event.payload);
+        },
+      );
+
       // Cleanup function
       return () => {
         unlistenShow();
         unlistenHide();
         unlistenLevel();
+        unlistenStreaming();
       };
     };
 
     setupEventListeners();
   }, []);
+
+  // Auto-scroll streaming text to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [streamingText]);
 
   const getIcon = () => {
     if (state === "recording") {
@@ -70,15 +90,21 @@ const RecordingOverlay: React.FC = () => {
     }
   };
 
+  const hasStreaming = state === "recording" && streamingText;
+
   return (
     <div
       dir={direction}
-      className={`recording-overlay ${isVisible ? "fade-in" : ""}`}
+      className={`recording-overlay ${isVisible ? "fade-in" : ""} ${hasStreaming ? "streaming" : ""}`}
     >
       <div className="overlay-left">{getIcon()}</div>
 
       <div className="overlay-middle">
-        {state === "recording" && (
+        {state === "recording" && streamingText ? (
+          <div className="streaming-text-container" ref={scrollRef}>
+            <div className="streaming-text">{streamingText}</div>
+          </div>
+        ) : state === "recording" ? (
           <div className="bars-container">
             {levels.map((v, i) => (
               <div
@@ -92,7 +118,7 @@ const RecordingOverlay: React.FC = () => {
               />
             ))}
           </div>
-        )}
+        ) : null}
         {state === "transcribing" && (
           <div className="transcribing-text">{t("overlay.transcribing")}</div>
         )}
