@@ -471,7 +471,7 @@ impl ModelManager {
             "qwen3-streaming".to_string(),
             ModelInfo {
                 id: "qwen3-streaming".to_string(),
-                name: "Qwen3 ASR Streaming".to_string(),
+                name: "Qwen3 ASR 0.6B Streaming".to_string(),
                 description: "Multilingual. Used for live transcription preview.".to_string(),
                 filename: "qwen3-streaming".to_string(),
                 url: None,
