@@ -364,6 +364,8 @@ pub struct AppSettings {
     pub streaming_model: String,
     #[serde(default)]
     pub streaming_live_typing: bool,
+    #[serde(default = "default_gpu_provider")]
+    pub gpu_provider: String,
 }
 
 fn default_model() -> String {
@@ -570,6 +572,10 @@ fn default_streaming_model() -> String {
     "nemotron-streaming".to_string()
 }
 
+fn default_gpu_provider() -> String {
+    "auto".to_string()
+}
+
 fn ensure_post_process_defaults(settings: &mut AppSettings) -> bool {
     let mut changed = false;
     for provider in default_post_process_providers() {
@@ -726,6 +732,7 @@ pub fn get_default_settings() -> AppSettings {
         streaming_enabled: false,
         streaming_model: default_streaming_model(),
         streaming_live_typing: false,
+        gpu_provider: default_gpu_provider(),
     }
 }
 

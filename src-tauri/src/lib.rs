@@ -112,6 +112,15 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     // after onboarding completes. This avoids triggering permission dialogs
     // on macOS before the user is ready.
 
+    // Apply GPU provider setting before any model loading occurs
+    {
+        let startup_settings = settings::get_settings(app_handle);
+        let gpu_provider = commands::gpu::parse_gpu_provider(&startup_settings.gpu_provider)
+            .unwrap_or(transcribe_rs::GpuProvider::Auto);
+        transcribe_rs::set_gpu_provider(gpu_provider);
+        log::info!("GPU provider set to: {:?}", gpu_provider);
+    }
+
     // Initialize the managers
     let recording_manager = Arc::new(
         AudioRecordingManager::new(app_handle).expect("Failed to initialize recording manager"),
@@ -356,6 +365,8 @@ pub fn run(cli_args: CliArgs) {
         commands::history::delete_history_entry,
         commands::history::update_history_limit,
         commands::history::update_recording_retention_period,
+        commands::gpu::get_available_gpu_providers,
+        commands::gpu::change_gpu_provider_setting,
         helpers::clamshell::is_laptop,
     ]);
 
