@@ -112,9 +112,20 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     // after onboarding completes. This avoids triggering permission dialogs
     // on macOS before the user is ready.
 
-    // Apply GPU provider setting before any model loading occurs
+    // Apply GPU provider setting before any model loading occurs.
+    // If the persisted value isn't available in this build (e.g. "directml"
+    // saved by a previous build that had DirectML compiled in), reset to "auto".
     {
-        let startup_settings = settings::get_settings(app_handle);
+        let mut startup_settings = settings::get_settings(app_handle);
+        let available: Vec<String> = commands::gpu::get_available_gpu_providers();
+        if !available.contains(&startup_settings.gpu_provider) {
+            log::warn!(
+                "Persisted GPU provider '{}' is not available in this build, resetting to 'auto'",
+                startup_settings.gpu_provider
+            );
+            startup_settings.gpu_provider = "auto".to_string();
+            settings::write_settings(app_handle, startup_settings.clone());
+        }
         let gpu_provider = commands::gpu::parse_gpu_provider(&startup_settings.gpu_provider)
             .unwrap_or(transcribe_rs::GpuProvider::Auto);
         transcribe_rs::set_gpu_provider(gpu_provider);
