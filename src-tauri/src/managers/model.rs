@@ -24,6 +24,7 @@ pub enum EngineType {
     MoonshineStreaming,
     SenseVoice,
     NemotronStreaming,
+    Qwen3,
     Qwen3Streaming,
 }
 
@@ -473,7 +474,7 @@ impl ModelManager {
                 id: "qwen3-streaming".to_string(),
                 name: "Qwen3 ASR 0.6B Streaming".to_string(),
                 description: "Multilingual. Used for live transcription preview.".to_string(),
-                filename: "qwen3-streaming".to_string(),
+                filename: "qwen3-asr-0.6b".to_string(),
                 url: None,
                 size_mb: 6000,
                 is_downloaded: false,
@@ -504,8 +505,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/encoder.onnx".to_string(),
                         filename: "encoder.onnx".to_string(),
-                        size_bytes: 790_236,
-                        sha256: Some("a349a5bb083217a69857351585720b2a2a5b3318716b29141a592b311d8cca97".to_string()),
+                        size_bytes: 807_884,
+                        sha256: Some("707e1f529a0f5d2e9f9734898860964aa970392e486b2ad2406e19c4529cbf09".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/encoder.onnx.data".to_string(),
@@ -516,8 +517,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_init.onnx".to_string(),
                         filename: "decoder_init.onnx".to_string(),
-                        size_bytes: 2_122_303,
-                        sha256: Some("8d83b123711ee689c8bd4bc65732eaaef204a980e62f822b03cc266fe1e5317c".to_string()),
+                        size_bytes: 2_119_279,
+                        sha256: Some("ec6a31c95ad203c3eea41605379080020a65311655333217b0e8b67e1afcf950".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_init.onnx.data".to_string(),
@@ -528,8 +529,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_step.onnx".to_string(),
                         filename: "decoder_step.onnx".to_string(),
-                        size_bytes: 2_147_990,
-                        sha256: Some("4ed0e87ae5e32c8f854d1e7f552d520e2d8b609402c7679f79b4f8fdbd33f82a".to_string()),
+                        size_bytes: 2_144_966,
+                        sha256: Some("916e6d603eface8a928ffaa95ba6ee6d4c5719b9b5a7a87db65fcd7b77f6cf33".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_step.onnx.data".to_string(),
@@ -565,7 +566,7 @@ impl ModelManager {
                 id: "qwen3-streaming-1.7b".to_string(),
                 name: "Qwen3 ASR 1.7B Streaming".to_string(),
                 description: "Multilingual. Higher quality, slower. Used for live transcription preview.".to_string(),
-                filename: "qwen3-streaming-1.7b".to_string(),
+                filename: "qwen3-asr-1.7b".to_string(),
                 url: None,
                 size_mb: 16000,
                 is_downloaded: false,
@@ -596,8 +597,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/encoder.onnx".to_string(),
                         filename: "encoder.onnx".to_string(),
-                        size_bytes: 1_057_801,
-                        sha256: Some("7545855eecd21aa57f1da258eae60209e1200a3d8a25af8bb73596777644f610".to_string()),
+                        size_bytes: 1_055_965,
+                        sha256: Some("bcd17bbf9072262d2f2ebce0e7547f87640d5ed3a764b4af0bff592ebcac947f".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/encoder.onnx.data".to_string(),
@@ -608,8 +609,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_init.onnx".to_string(),
                         filename: "decoder_init.onnx".to_string(),
-                        size_bytes: 2_122_430,
-                        sha256: Some("d9b6cbb4875052823024eddfe93523efb77395184945af663fab32b91b8b0e03".to_string()),
+                        size_bytes: 2_119_406,
+                        sha256: Some("6ef5b80d3213d98e4ebc163a5186bea573de8d79f910df9472bfc29f5a488f01".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_init.onnx.data".to_string(),
@@ -620,8 +621,174 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_step.onnx".to_string(),
                         filename: "decoder_step.onnx".to_string(),
-                        size_bytes: 2_148_117,
-                        sha256: Some("1d22d908fbce347f73a26602af64e45430b6c7b71bc8c0f3d578ee542834fee8".to_string()),
+                        size_bytes: 2_145_093,
+                        sha256: Some("bfe4d630ce7ece88354f694a6e04b16cf4b2ce30a537a34dd3049b77f4f0e325".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_step.onnx.data".to_string(),
+                        filename: "decoder_step.onnx.data".to_string(),
+                        size_bytes: 6_882_328_576,
+                        sha256: Some("9e7c616676d526e1c3d3da5644700258ce49b96d624ab4b64b0af65e0046e8da".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/embed_tokens.bin".to_string(),
+                        filename: "embed_tokens.bin".to_string(),
+                        size_bytes: 1_244_659_712,
+                        sha256: Some("cbf07af526ca4f37526ebe72f3146d3610c8a301a7c37b9153d92ef23f2688d7".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/tokenizer.json".to_string(),
+                        filename: "tokenizer.json".to_string(),
+                        size_bytes: 11_429_377,
+                        sha256: Some("bd2a97b55c8f7f9c328c73ee9b9178771037e9f566dfca8e238a063d41cbac92".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/config.json".to_string(),
+                        filename: "config.json".to_string(),
+                        size_bytes: 1_191,
+                        sha256: Some("50eb023f19723bb6d7e4242c3075015053a5a20ae7f5cec704075e758a4f5617".to_string()),
+                    },
+                ],
+            },
+        );
+
+        // Qwen3-ASR batch (non-streaming) models — share model files with streaming variants
+        let qwen3_languages: Vec<String> = vec![
+            "zh", "en", "ja", "ko", "yue", "fr", "de", "es", "pt", "ru", "it", "ar",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect();
+
+        available_models.insert(
+            "qwen3-0.6b".to_string(),
+            ModelInfo {
+                id: "qwen3-0.6b".to_string(),
+                name: "Qwen3 ASR 0.6B".to_string(),
+                description: "Multilingual. Fast batch transcription.".to_string(),
+                filename: "qwen3-asr-0.6b".to_string(),
+                url: None,
+                size_mb: 6000,
+                is_downloaded: false,
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: true,
+                engine_type: EngineType::Qwen3,
+                accuracy_score: 0.75,
+                speed_score: 0.75,
+                supports_translation: false,
+                is_recommended: false,
+                supported_languages: qwen3_languages.clone(),
+                is_custom: false,
+                files: vec![
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/encoder.onnx".to_string(),
+                        filename: "encoder.onnx".to_string(),
+                        size_bytes: 807_884,
+                        sha256: Some("707e1f529a0f5d2e9f9734898860964aa970392e486b2ad2406e19c4529cbf09".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/encoder.onnx.data".to_string(),
+                        filename: "encoder.onnx.data".to_string(),
+                        size_bytes: 751_042_560,
+                        sha256: Some("5c46ef5281088836f54a398d70e5b2b5ea377356268eee3d23aa550e37ec44e4".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_init.onnx".to_string(),
+                        filename: "decoder_init.onnx".to_string(),
+                        size_bytes: 2_119_279,
+                        sha256: Some("ec6a31c95ad203c3eea41605379080020a65311655333217b0e8b67e1afcf950".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_init.onnx.data".to_string(),
+                        filename: "decoder_init.onnx.data".to_string(),
+                        size_bytes: 2_384_199_680,
+                        sha256: Some("68b91f478fa664f80d141d904d2184c79f3a64ddba4681861eb0c280b2d5dab6".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_step.onnx".to_string(),
+                        filename: "decoder_step.onnx".to_string(),
+                        size_bytes: 2_144_966,
+                        sha256: Some("916e6d603eface8a928ffaa95ba6ee6d4c5719b9b5a7a87db65fcd7b77f6cf33".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_step.onnx.data".to_string(),
+                        filename: "decoder_step.onnx.data".to_string(),
+                        size_bytes: 2_384_265_216,
+                        sha256: Some("3fb8bafbb6208d62df321ffa748c2a3fa6aa01ddf5662618d39b68b8d16b571c".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/embed_tokens.bin".to_string(),
+                        filename: "embed_tokens.bin".to_string(),
+                        size_bytes: 622_329_856,
+                        sha256: Some("c77cb3289031b1cb647e0134272489dfaac23c455a3f04c5b76ece7fd5bc8b04".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/tokenizer.json".to_string(),
+                        filename: "tokenizer.json".to_string(),
+                        size_bytes: 11_429_377,
+                        sha256: Some("bd2a97b55c8f7f9c328c73ee9b9178771037e9f566dfca8e238a063d41cbac92".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/config.json".to_string(),
+                        filename: "config.json".to_string(),
+                        size_bytes: 1_190,
+                        sha256: Some("6804495d78cee0a6fbaecba08665a34ad28c181d0ca7023e8ed868d5f2b31578".to_string()),
+                    },
+                ],
+            },
+        );
+
+        available_models.insert(
+            "qwen3-1.7b".to_string(),
+            ModelInfo {
+                id: "qwen3-1.7b".to_string(),
+                name: "Qwen3 ASR 1.7B".to_string(),
+                description: "Multilingual. Higher quality, slower batch transcription.".to_string(),
+                filename: "qwen3-asr-1.7b".to_string(),
+                url: None,
+                size_mb: 16000,
+                is_downloaded: false,
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: true,
+                engine_type: EngineType::Qwen3,
+                accuracy_score: 0.85,
+                speed_score: 0.45,
+                supports_translation: false,
+                is_recommended: false,
+                supported_languages: qwen3_languages,
+                is_custom: false,
+                files: vec![
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/encoder.onnx".to_string(),
+                        filename: "encoder.onnx".to_string(),
+                        size_bytes: 1_055_965,
+                        sha256: Some("bcd17bbf9072262d2f2ebce0e7547f87640d5ed3a764b4af0bff592ebcac947f".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/encoder.onnx.data".to_string(),
+                        filename: "encoder.onnx.data".to_string(),
+                        size_bytes: 1_276_182_528,
+                        sha256: Some("b4232db39ddf6e157983e358a3b474bac62d68ebbb36edd1a64fa8bff5b691ce".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_init.onnx".to_string(),
+                        filename: "decoder_init.onnx".to_string(),
+                        size_bytes: 2_119_406,
+                        sha256: Some("6ef5b80d3213d98e4ebc163a5186bea573de8d79f910df9472bfc29f5a488f01".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_init.onnx.data".to_string(),
+                        filename: "decoder_init.onnx.data".to_string(),
+                        size_bytes: 6_882_328_576,
+                        sha256: Some("3a590b6fa3efc91a31cc7c5a1206f976807daa88ab4b0c7a7ed38d13cd0a6ee1".to_string()),
+                    },
+                    ModelFile {
+                        url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_step.onnx".to_string(),
+                        filename: "decoder_step.onnx".to_string(),
+                        size_bytes: 2_145_093,
+                        sha256: Some("bfe4d630ce7ece88354f694a6e04b16cf4b2ce30a537a34dd3049b77f4f0e325".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_step.onnx.data".to_string(),
