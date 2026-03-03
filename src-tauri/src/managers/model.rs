@@ -505,8 +505,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/encoder.onnx".to_string(),
                         filename: "encoder.onnx".to_string(),
-                        size_bytes: 790_236,
-                        sha256: Some("a349a5bb083217a69857351585720b2a2a5b3318716b29141a592b311d8cca97".to_string()),
+                        size_bytes: 807_884,
+                        sha256: Some("707e1f529a0f5d2e9f9734898860964aa970392e486b2ad2406e19c4529cbf09".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/encoder.onnx.data".to_string(),
@@ -517,8 +517,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_init.onnx".to_string(),
                         filename: "decoder_init.onnx".to_string(),
-                        size_bytes: 2_122_303,
-                        sha256: Some("8d83b123711ee689c8bd4bc65732eaaef204a980e62f822b03cc266fe1e5317c".to_string()),
+                        size_bytes: 2_119_279,
+                        sha256: Some("ec6a31c95ad203c3eea41605379080020a65311655333217b0e8b67e1afcf950".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_init.onnx.data".to_string(),
@@ -529,8 +529,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_step.onnx".to_string(),
                         filename: "decoder_step.onnx".to_string(),
-                        size_bytes: 2_147_990,
-                        sha256: Some("4ed0e87ae5e32c8f854d1e7f552d520e2d8b609402c7679f79b4f8fdbd33f82a".to_string()),
+                        size_bytes: 2_144_966,
+                        sha256: Some("916e6d603eface8a928ffaa95ba6ee6d4c5719b9b5a7a87db65fcd7b77f6cf33".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_step.onnx.data".to_string(),
@@ -597,8 +597,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/encoder.onnx".to_string(),
                         filename: "encoder.onnx".to_string(),
-                        size_bytes: 1_057_801,
-                        sha256: Some("7545855eecd21aa57f1da258eae60209e1200a3d8a25af8bb73596777644f610".to_string()),
+                        size_bytes: 1_055_965,
+                        sha256: Some("bcd17bbf9072262d2f2ebce0e7547f87640d5ed3a764b4af0bff592ebcac947f".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/encoder.onnx.data".to_string(),
@@ -609,8 +609,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_init.onnx".to_string(),
                         filename: "decoder_init.onnx".to_string(),
-                        size_bytes: 2_122_430,
-                        sha256: Some("d9b6cbb4875052823024eddfe93523efb77395184945af663fab32b91b8b0e03".to_string()),
+                        size_bytes: 2_119_406,
+                        sha256: Some("6ef5b80d3213d98e4ebc163a5186bea573de8d79f910df9472bfc29f5a488f01".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_init.onnx.data".to_string(),
@@ -621,8 +621,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_step.onnx".to_string(),
                         filename: "decoder_step.onnx".to_string(),
-                        size_bytes: 2_148_117,
-                        sha256: Some("1d22d908fbce347f73a26602af64e45430b6c7b71bc8c0f3d578ee542834fee8".to_string()),
+                        size_bytes: 2_145_093,
+                        sha256: Some("bfe4d630ce7ece88354f694a6e04b16cf4b2ce30a537a34dd3049b77f4f0e325".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_step.onnx.data".to_string(),
@@ -684,8 +684,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/encoder.onnx".to_string(),
                         filename: "encoder.onnx".to_string(),
-                        size_bytes: 790_236,
-                        sha256: Some("a349a5bb083217a69857351585720b2a2a5b3318716b29141a592b311d8cca97".to_string()),
+                        size_bytes: 807_884,
+                        sha256: Some("707e1f529a0f5d2e9f9734898860964aa970392e486b2ad2406e19c4529cbf09".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/encoder.onnx.data".to_string(),
@@ -696,8 +696,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_init.onnx".to_string(),
                         filename: "decoder_init.onnx".to_string(),
-                        size_bytes: 2_122_303,
-                        sha256: Some("8d83b123711ee689c8bd4bc65732eaaef204a980e62f822b03cc266fe1e5317c".to_string()),
+                        size_bytes: 2_119_279,
+                        sha256: Some("ec6a31c95ad203c3eea41605379080020a65311655333217b0e8b67e1afcf950".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_init.onnx.data".to_string(),
@@ -708,8 +708,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_step.onnx".to_string(),
                         filename: "decoder_step.onnx".to_string(),
-                        size_bytes: 2_147_990,
-                        sha256: Some("4ed0e87ae5e32c8f854d1e7f552d520e2d8b609402c7679f79b4f8fdbd33f82a".to_string()),
+                        size_bytes: 2_144_966,
+                        sha256: Some("916e6d603eface8a928ffaa95ba6ee6d4c5719b9b5a7a87db65fcd7b77f6cf33".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-0.6b-onnx/resolve/main/decoder_step.onnx.data".to_string(),
@@ -763,8 +763,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/encoder.onnx".to_string(),
                         filename: "encoder.onnx".to_string(),
-                        size_bytes: 1_057_801,
-                        sha256: Some("7545855eecd21aa57f1da258eae60209e1200a3d8a25af8bb73596777644f610".to_string()),
+                        size_bytes: 1_055_965,
+                        sha256: Some("bcd17bbf9072262d2f2ebce0e7547f87640d5ed3a764b4af0bff592ebcac947f".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/encoder.onnx.data".to_string(),
@@ -775,8 +775,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_init.onnx".to_string(),
                         filename: "decoder_init.onnx".to_string(),
-                        size_bytes: 2_122_430,
-                        sha256: Some("d9b6cbb4875052823024eddfe93523efb77395184945af663fab32b91b8b0e03".to_string()),
+                        size_bytes: 2_119_406,
+                        sha256: Some("6ef5b80d3213d98e4ebc163a5186bea573de8d79f910df9472bfc29f5a488f01".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_init.onnx.data".to_string(),
@@ -787,8 +787,8 @@ impl ModelManager {
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_step.onnx".to_string(),
                         filename: "decoder_step.onnx".to_string(),
-                        size_bytes: 2_148_117,
-                        sha256: Some("1d22d908fbce347f73a26602af64e45430b6c7b71bc8c0f3d578ee542834fee8".to_string()),
+                        size_bytes: 2_145_093,
+                        sha256: Some("bfe4d630ce7ece88354f694a6e04b16cf4b2ce30a537a34dd3049b77f4f0e325".to_string()),
                     },
                     ModelFile {
                         url: "https://huggingface.co/andrewleech/qwen3-asr-1.7b-onnx/resolve/main/decoder_step.onnx.data".to_string(),
