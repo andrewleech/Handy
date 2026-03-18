@@ -32,7 +32,9 @@ impl StreamingAgc {
             noise_floor,
             attack_alpha: 1.0 - (-frame_ms / attack_ms).exp(),
             release_alpha: 1.0 - (-frame_ms / release_ms).exp(),
-            smoothed_rms: 0.0,
+            // Start at target so the AGC begins at unity gain rather than
+            // spiking to max_gain on the first frame.
+            smoothed_rms: target_rms,
         }
     }
 
@@ -44,7 +46,7 @@ impl StreamingAgc {
             constants::AGC_NOISE_FLOOR,
             constants::AGC_ATTACK_MS,
             constants::AGC_RELEASE_MS,
-            30.0, // frame duration in ms (matches VAD frame size)
+            constants::AGC_FRAME_MS,
         )
     }
 
@@ -69,7 +71,7 @@ impl StreamingAgc {
 
         if gain != 1.0 {
             for s in frame.iter_mut() {
-                *s *= gain;
+                *s = (*s * gain).clamp(-1.0, 1.0);
             }
         }
 
@@ -77,7 +79,7 @@ impl StreamingAgc {
     }
 
     pub fn reset(&mut self) {
-        self.smoothed_rms = 0.0;
+        self.smoothed_rms = self.target_rms;
     }
 }
 
@@ -108,13 +110,16 @@ pub fn normalize_buffer(samples: &mut [f32], target_rms: f32, noise_floor: f32) 
 }
 
 /// RMS (root mean square) of a sample buffer.
+///
+/// Uses f64 accumulation to avoid precision loss on large buffers
+/// (e.g. 60 s at 16 kHz = 960 k samples).
 #[inline]
 fn frame_rms(samples: &[f32]) -> f32 {
     if samples.is_empty() {
         return 0.0;
     }
-    let sum_sq: f32 = samples.iter().map(|&s| s * s).sum();
-    (sum_sq / samples.len() as f32).sqrt()
+    let sum_sq: f64 = samples.iter().map(|&s| (s as f64) * (s as f64)).sum();
+    (sum_sq / samples.len() as f64).sqrt() as f32
 }
 
 #[cfg(test)]
@@ -215,17 +220,27 @@ mod tests {
     }
 
     #[test]
-    fn streaming_agc_reset_clears_state() {
+    fn streaming_agc_reset_restores_initial_state() {
         let mut agc = StreamingAgc::from_defaults();
+        let initial_rms = agc.smoothed_rms;
         for _ in 0..50 {
             let mut frame = sine_frame(440.0, 0.3, 16000, 480);
             agc.process_frame(&mut frame);
         }
         agc.reset();
         assert!(
-            agc.smoothed_rms.abs() < 1e-9,
-            "smoothed_rms should be 0 after reset"
+            (agc.smoothed_rms - initial_rms).abs() < 1e-9,
+            "smoothed_rms should be restored after reset"
         );
+    }
+
+    #[test]
+    fn streaming_agc_cold_start_no_spike() {
+        // First frame on a fresh AGC should not get max gain.
+        let mut agc = StreamingAgc::from_defaults();
+        let mut frame = sine_frame(440.0, 0.05, 16000, 480);
+        let gain = agc.process_frame(&mut frame);
+        assert!(gain < 5.0, "Cold-start gain should be moderate, got {gain}");
     }
 
     #[test]

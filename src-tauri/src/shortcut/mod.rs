@@ -672,18 +672,22 @@ pub fn change_extra_recording_buffer_setting(app: AppHandle, ms: u64) -> Result<
 #[tauri::command]
 #[specta::specta]
 pub fn change_vad_threshold_setting(app: AppHandle, threshold: f32) -> Result<(), String> {
-    if !(0.0..=1.0).contains(&threshold) {
-        return Err("VAD threshold must be between 0.0 and 1.0".to_string());
+    if !(0.05..=0.8).contains(&threshold) {
+        return Err("VAD threshold must be between 0.05 and 0.8".to_string());
     }
     let mut settings = settings::get_settings(&app);
     settings.vad_threshold = threshold;
     settings::write_settings(&app, settings);
 
     // Force recorder recreation so the new threshold takes effect immediately.
-    // In OnDemand mode the recorder is recreated each session anyway, but in
-    // AlwaysOn mode it persists.
+    // Skip if currently recording — the new threshold will apply on the next
+    // session instead.
     let rm = app.state::<crate::managers::audio::AudioRecordingManager>();
-    let _ = rm.update_selected_device();
+    if !rm.is_recording() {
+        if let Err(e) = rm.update_selected_device() {
+            warn!("Failed to recreate recorder after VAD threshold change: {e}");
+        }
+    }
 
     Ok(())
 }
