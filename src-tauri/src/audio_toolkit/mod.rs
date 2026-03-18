@@ -1,9 +1,11 @@
+pub mod agc;
 pub mod audio;
 pub mod constants;
 pub mod text;
 pub mod utils;
 pub mod vad;
 
+pub use agc::{normalize_buffer, StreamingAgc};
 pub use audio::{
     is_microphone_access_denied, list_input_devices, list_output_devices, save_wav_file,
     AudioRecorder, CpalDeviceInfo,

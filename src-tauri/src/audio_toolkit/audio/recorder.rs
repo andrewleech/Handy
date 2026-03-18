@@ -13,6 +13,7 @@ use cpal::{
 };
 
 use crate::audio_toolkit::{
+    agc::StreamingAgc,
     audio::{AudioVisualiser, FrameResampler},
     constants,
     vad::{self, VadFrame},
@@ -35,6 +36,7 @@ pub struct AudioRecorder {
     cmd_tx: Option<mpsc::Sender<Cmd>>,
     worker_handle: Option<std::thread::JoinHandle<()>>,
     vad: Option<Arc<Mutex<Box<dyn vad::VoiceActivityDetector>>>>,
+    agc: Option<Arc<Mutex<StreamingAgc>>>,
     level_cb: Option<Arc<dyn Fn(Vec<f32>) + Send + Sync + 'static>>,
 }
 
@@ -45,12 +47,18 @@ impl AudioRecorder {
             cmd_tx: None,
             worker_handle: None,
             vad: None,
+            agc: None,
             level_cb: None,
         })
     }
 
     pub fn with_vad(mut self, vad: Box<dyn VoiceActivityDetector>) -> Self {
         self.vad = Some(Arc::new(Mutex::new(vad)));
+        self
+    }
+
+    pub fn with_agc(mut self, agc: StreamingAgc) -> Self {
+        self.agc = Some(Arc::new(Mutex::new(agc)));
         self
     }
 
@@ -81,6 +89,7 @@ impl AudioRecorder {
 
         let thread_device = device.clone();
         let vad = self.vad.clone();
+        let agc = self.agc.clone();
         // Move the optional level callback into the worker thread
         let level_cb = self.level_cb.clone();
 
@@ -159,7 +168,15 @@ impl AudioRecorder {
                 Ok((stream, sample_rate)) => {
                     let _ = init_tx.send(Ok(()));
                     // Keep the stream alive while we process samples.
-                    run_consumer(sample_rate, vad, sample_rx, cmd_rx, level_cb, stop_flag);
+                    run_consumer(
+                        sample_rate,
+                        vad,
+                        agc,
+                        sample_rx,
+                        cmd_rx,
+                        level_cb,
+                        stop_flag,
+                    );
                     drop(stream);
                 }
                 Err(error_message) => {
@@ -353,6 +370,7 @@ mod tests {
 fn run_consumer(
     in_sample_rate: u32,
     vad: Option<Arc<Mutex<Box<dyn vad::VoiceActivityDetector>>>>,
+    agc: Option<Arc<Mutex<StreamingAgc>>>,
     sample_rx: mpsc::Receiver<AudioChunk>,
     cmd_rx: mpsc::Receiver<Cmd>,
     level_cb: Option<Arc<dyn Fn(Vec<f32>) + Send + Sync + 'static>>,
@@ -366,6 +384,9 @@ fn run_consumer(
 
     let mut processed_samples = Vec::<f32>::new();
     let mut recording = false;
+
+    // Reusable buffer for AGC-processed frames (avoids per-frame allocation).
+    let mut agc_buf = Vec::<f32>::with_capacity(480);
 
     // ---------- spectrum visualisation setup ---------------------------- //
     const BUCKETS: usize = 16;
@@ -382,20 +403,33 @@ fn run_consumer(
         samples: &[f32],
         recording: bool,
         vad: &Option<Arc<Mutex<Box<dyn vad::VoiceActivityDetector>>>>,
+        agc: &Option<Arc<Mutex<StreamingAgc>>>,
+        agc_tmp: &mut Vec<f32>,
         out_buf: &mut Vec<f32>,
     ) {
         if !recording {
             return;
         }
 
+        // Apply streaming AGC (stage 1).  The AGC'd audio is what both the
+        // VAD and the transcription buffer see.
+        let frame: &[f32] = if let Some(agc_arc) = agc {
+            agc_tmp.clear();
+            agc_tmp.extend_from_slice(samples);
+            agc_arc.lock().unwrap().process_frame(agc_tmp);
+            agc_tmp.as_slice()
+        } else {
+            samples
+        };
+
         if let Some(vad_arc) = vad {
             let mut det = vad_arc.lock().unwrap();
-            match det.push_frame(samples).unwrap_or(VadFrame::Speech(samples)) {
+            match det.push_frame(frame).unwrap_or(VadFrame::Speech(frame)) {
                 VadFrame::Speech(buf) => out_buf.extend_from_slice(buf),
                 VadFrame::Noise => {}
             }
         } else {
-            out_buf.extend_from_slice(samples);
+            out_buf.extend_from_slice(frame);
         }
     }
 
@@ -419,7 +453,14 @@ fn run_consumer(
 
         // ---------- existing pipeline ------------------------------------ //
         frame_resampler.push(&raw, &mut |frame: &[f32]| {
-            handle_frame(frame, recording, &vad, &mut processed_samples)
+            handle_frame(
+                frame,
+                recording,
+                &vad,
+                &agc,
+                &mut agc_buf,
+                &mut processed_samples,
+            )
         });
 
         // non-blocking check for a command
@@ -432,6 +473,9 @@ fn run_consumer(
                     visualizer.reset();
                     if let Some(v) = &vad {
                         v.lock().unwrap().reset();
+                    }
+                    if let Some(a) = &agc {
+                        a.lock().unwrap().reset();
                     }
                 }
                 Cmd::Stop(reply_tx) => {
@@ -446,7 +490,14 @@ fn run_consumer(
                         match sample_rx.recv_timeout(Duration::from_secs(2)) {
                             Ok(AudioChunk::Samples(remaining)) => {
                                 frame_resampler.push(&remaining, &mut |frame: &[f32]| {
-                                    handle_frame(frame, true, &vad, &mut processed_samples)
+                                    handle_frame(
+                                        frame,
+                                        true,
+                                        &vad,
+                                        &agc,
+                                        &mut agc_buf,
+                                        &mut processed_samples,
+                                    )
                                 });
                             }
                             Ok(AudioChunk::EndOfStream) => break,
@@ -458,7 +509,14 @@ fn run_consumer(
                     }
 
                     frame_resampler.finish(&mut |frame: &[f32]| {
-                        handle_frame(frame, true, &vad, &mut processed_samples)
+                        handle_frame(
+                            frame,
+                            true,
+                            &vad,
+                            &agc,
+                            &mut agc_buf,
+                            &mut processed_samples,
+                        )
                     });
 
                     let _ = reply_tx.send(std::mem::take(&mut processed_samples));

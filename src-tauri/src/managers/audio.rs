@@ -1,4 +1,6 @@
-use crate::audio_toolkit::{list_input_devices, vad::SmoothedVad, AudioRecorder, SileroVad};
+use crate::audio_toolkit::{
+    list_input_devices, normalize_buffer, vad::SmoothedVad, AudioRecorder, SileroVad, StreamingAgc,
+};
 use crate::helpers::clamshell;
 use crate::settings::{get_settings, AppSettings};
 use crate::utils;
@@ -118,14 +120,19 @@ fn create_audio_recorder(
     vad_path: &str,
     app_handle: &tauri::AppHandle,
 ) -> Result<AudioRecorder, anyhow::Error> {
-    let silero = SileroVad::new(vad_path, 0.3)
+    let settings = get_settings(app_handle);
+
+    let silero = SileroVad::new(vad_path, settings.vad_threshold)
         .map_err(|e| anyhow::anyhow!("Failed to create SileroVad: {}", e))?;
     let smoothed_vad = SmoothedVad::new(Box::new(silero), 15, 15, 2);
 
-    // Recorder with VAD plus a spectrum-level callback that forwards updates to
-    // the frontend.
+    let agc = StreamingAgc::from_defaults();
+
+    // Recorder with AGC, VAD, and a spectrum-level callback that forwards
+    // updates to the frontend.
     let recorder = AudioRecorder::new()
         .map_err(|e| anyhow::anyhow!("Failed to create AudioRecorder: {}", e))?
+        .with_agc(agc)
         .with_vad(Box::new(smoothed_vad))
         .with_level_callback({
             let app_handle = app_handle.clone();
@@ -390,7 +397,7 @@ impl AudioRecordingManager {
                     std::thread::sleep(Duration::from_millis(settings.extra_recording_buffer_ms));
                 }
 
-                let samples = if let Some(rec) = self.recorder.lock().unwrap().as_ref() {
+                let mut samples = if let Some(rec) = self.recorder.lock().unwrap().as_ref() {
                     match rec.stop() {
                         Ok(buf) => buf,
                         Err(e) => {
@@ -408,6 +415,15 @@ impl AudioRecordingManager {
                 // In on-demand mode turn the mic off again
                 if matches!(*self.mode.lock().unwrap(), MicrophoneMode::OnDemand) {
                     self.stop_microphone_stream();
+                }
+
+                // Stage 2: whole-buffer RMS normalization before transcription.
+                if !samples.is_empty() {
+                    normalize_buffer(
+                        &mut samples,
+                        crate::audio_toolkit::constants::NORMALIZE_TARGET_RMS,
+                        crate::audio_toolkit::constants::NORMALIZE_NOISE_FLOOR,
+                    );
                 }
 
                 // Pad if very short

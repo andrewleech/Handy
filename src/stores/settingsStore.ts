@@ -149,6 +149,8 @@ const settingUpdaters: {
     commands.changeOrtAcceleratorSetting(value as OrtAcceleratorSetting),
   extra_recording_buffer_ms: (value) =>
     commands.changeExtraRecordingBufferSetting(value as number),
+  vad_threshold: (value) =>
+    commands.changeVadThresholdSetting(value as number),
 };
 
 export const useSettingsStore = create<SettingsStore>()(

@@ -397,6 +397,8 @@ pub struct AppSettings {
     pub ort_accelerator: OrtAcceleratorSetting,
     #[serde(default)]
     pub extra_recording_buffer_ms: u64,
+    #[serde(default = "default_vad_threshold")]
+    pub vad_threshold: f32,
 }
 
 fn default_model() -> String {
@@ -448,6 +450,10 @@ fn default_word_correction_threshold() -> f64 {
 
 fn default_paste_delay_ms() -> u64 {
     60
+}
+
+fn default_vad_threshold() -> f32 {
+    0.3
 }
 
 fn default_auto_submit() -> bool {
@@ -765,6 +771,7 @@ pub fn get_default_settings() -> AppSettings {
         whisper_accelerator: WhisperAcceleratorSetting::default(),
         ort_accelerator: OrtAcceleratorSetting::default(),
         extra_recording_buffer_ms: 0,
+        vad_threshold: default_vad_threshold(),
     }
 }
 
