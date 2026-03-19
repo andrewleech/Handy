@@ -163,10 +163,16 @@ Fixes from principal-engineer agent review:
 - **Validation alignment** — backend validates 0.05..=0.8 matching the frontend slider range
 - **New test** — `streaming_agc_cold_start_no_spike` verifies first frame doesn't get max gain
 
+### Commit 3: `fix: second review — recorder recreation, normalize_buffer docs, tests`
+Fixes from second principal-engineer agent review:
+- **VAD threshold runtime effect** — `update_selected_device()` reuses the existing recorder (doesn't recreate VAD/AGC). Added `recreate_recorder()` method that drops the recorder and rebuilds from current settings. Threshold command now calls this instead.
+- **normalize_buffer attenuation documented** — clarified that unlike the streaming AGC (boost-only), `normalize_buffer` intentionally both amplifies and attenuates to give the model consistent input levels.
+- **Attenuation test** — added `normalize_buffer_attenuates_loud_input` test covering the gain < 1.0 path.
+- **agc_buf capacity** — derived from `WHISPER_SAMPLE_RATE * AGC_FRAME_MS` instead of hardcoded 480.
+
 ### Review findings not addressed (intentional)
-- **Max gain 30x / noise floor tuning** — these are empirical tuning parameters; reducing gain pre-emptively defeats the purpose (whisper detection). Tune after real-world testing.
-- **Double normalization concern** — stage 2 is intentionally a "final polish" for edge cases where stage 1 hasn't converged. Same target RMS is correct.
-- **Mutex overhead** — matches existing codebase pattern (VAD uses same Arc<Mutex<>> per-frame). Not worth changing in isolation.
+- **Max gain 30x / noise floor tuning** — empirical tuning parameters; reducing gain pre-emptively defeats the purpose (whisper detection). Tune after real-world testing.
+- **Arc<Mutex<>> overhead on StreamingAgc** — matches existing codebase pattern (VAD uses same pattern per-frame). Not worth changing in isolation.
 - **`&Option<Arc<...>>` idiom** — matches existing `handle_frame` pattern for VAD.
 
 ### Build status
@@ -177,14 +183,24 @@ Fixes from principal-engineer agent review:
 
 ---
 
-## Verification (pending)
+## TODO — remaining work before merge
 
-1. `cargo test` — run AGC unit tests once build deps are installed
-2. `cargo clippy` — check for warnings
-3. `bun run lint` + `bun run format:check` — frontend checks
-4. Manual test: record whispered speech at arm's length — verify VAD accepts it and transcription succeeds
-5. Manual test: normal volume speech — verify no audible artifacts or quality regression
-6. Manual test: adjust VAD threshold slider in settings UI — verify it persists and takes effect
+### Must do
+- [ ] **Regenerate `bindings.ts`** — run `bun run tauri dev` (or the project's specta codegen command) so that `changeVadThresholdSetting` and `vad_threshold` on `AppSettings` appear in the auto-generated TypeScript bindings. Without this the frontend will not compile.
+- [ ] **Run `cargo test`** — requires `sudo apt install libclang-dev libgtk-layer-shell-dev` (or build in Docker). Verify all AGC unit tests pass.
+- [ ] **Run `cargo clippy`** — check for warnings on the new code.
+- [ ] **Run `bun run lint` + `bun run format:check`** — verify frontend code passes linting.
+
+### Should do
+- [ ] **Add i18n keys for non-English locales** — `vadThreshold.title` and `vadThreshold.description` are only in `en/translation.json`. Add to `es`, `fr`, `vi`, etc. (i18next falls back to English, so this is functional but incomplete).
+- [ ] **Add AGC + VAD integration test** — verify that a known-quiet signal that SmoothedVad rejects without AGC is accepted with AGC. Would validate the core user-facing behavior.
+- [ ] **Real-world validation of AGC_MAX_GAIN** — test with whispered speech in noisy environments. If background noise triggers false VAD positives at high gain, reduce `AGC_MAX_GAIN` from 30 to 10-15.
+
+### Manual testing
+- [ ] Record whispered speech at arm's length — verify VAD accepts it and transcription succeeds
+- [ ] Record normal volume speech — verify no audible artifacts or quality regression
+- [ ] Adjust VAD threshold slider in debug settings — verify it persists and takes effect on next recording
+- [ ] Test in AlwaysOn microphone mode — verify threshold change recreates the recorder
 
 ---
 

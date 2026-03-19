@@ -377,6 +377,21 @@ impl AudioRecordingManager {
         Ok(())
     }
 
+    /// Drop and recreate the recorder so that construction-time parameters
+    /// (VAD threshold, AGC config) are re-read from settings.
+    pub fn recreate_recorder(&self) -> Result<(), anyhow::Error> {
+        let was_open = *self.is_open.lock().unwrap();
+        if was_open {
+            self.stop_microphone_stream();
+        }
+        // Drop the old recorder so start_microphone_stream builds a fresh one.
+        *self.recorder.lock().unwrap() = None;
+        if was_open {
+            self.start_microphone_stream()?;
+        }
+        Ok(())
+    }
+
     pub fn stop_recording(&self, binding_id: &str) -> Option<Vec<f32>> {
         let mut state = self.state.lock().unwrap();
 

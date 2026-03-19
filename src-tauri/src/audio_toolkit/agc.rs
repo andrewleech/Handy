@@ -85,9 +85,14 @@ impl StreamingAgc {
 
 /// Single-pass RMS normalization of a complete audio buffer.
 ///
-/// Scales the buffer so its RMS matches `target_rms`.  If the buffer's RMS is
-/// below `noise_floor` the buffer is returned unchanged (avoids amplifying
-/// pure noise).  Samples are clamped to [-1.0, 1.0] after scaling.
+/// Scales the buffer so its RMS matches `target_rms`.  Unlike the streaming
+/// AGC (which is boost-only), this function both amplifies quiet audio and
+/// attenuates loud audio.  This is intentional: the transcription model
+/// benefits from a consistent input level regardless of speaker volume.
+///
+/// If the buffer's RMS is below `noise_floor` the buffer is returned
+/// unchanged (avoids amplifying pure noise).  Samples are clamped to
+/// [-1.0, 1.0] after scaling.
 pub fn normalize_buffer(samples: &mut [f32], target_rms: f32, noise_floor: f32) {
     if samples.is_empty() {
         return;
@@ -253,6 +258,22 @@ mod tests {
             (rms - target).abs() < 0.01,
             "Expected RMS near {target}, got {rms}"
         );
+    }
+
+    #[test]
+    fn normalize_buffer_attenuates_loud_input() {
+        let target = 0.1;
+        // Loud signal (amplitude 0.8, RMS ≈ 0.57) should be attenuated.
+        let mut buf = sine_frame(440.0, 0.8, 16000, 16000);
+        let original_rms = frame_rms(&buf);
+        assert!(original_rms > target, "precondition: input should be loud");
+        normalize_buffer(&mut buf, target, 0.001);
+        let rms = frame_rms(&buf);
+        assert!(
+            (rms - target).abs() < 0.01,
+            "Expected RMS near {target}, got {rms}"
+        );
+        assert!(rms < original_rms, "should have attenuated");
     }
 
     #[test]

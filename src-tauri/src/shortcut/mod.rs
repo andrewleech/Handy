@@ -679,12 +679,12 @@ pub fn change_vad_threshold_setting(app: AppHandle, threshold: f32) -> Result<()
     settings.vad_threshold = threshold;
     settings::write_settings(&app, settings);
 
-    // Force recorder recreation so the new threshold takes effect immediately.
-    // Skip if currently recording — the new threshold will apply on the next
-    // session instead.
+    // Drop and recreate the recorder so the new VAD threshold (and AGC)
+    // are rebuilt from current settings.  Skip if currently recording —
+    // the new threshold will apply on the next session instead.
     let rm = app.state::<crate::managers::audio::AudioRecordingManager>();
     if !rm.is_recording() {
-        if let Err(e) = rm.update_selected_device() {
+        if let Err(e) = rm.recreate_recorder() {
             warn!("Failed to recreate recorder after VAD threshold change: {e}");
         }
     }

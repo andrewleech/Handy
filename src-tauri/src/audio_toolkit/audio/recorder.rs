@@ -386,7 +386,9 @@ fn run_consumer(
     let mut recording = false;
 
     // Reusable buffer for AGC-processed frames (avoids per-frame allocation).
-    let mut agc_buf = Vec::<f32>::with_capacity(480);
+    let agc_frame_samples =
+        (constants::WHISPER_SAMPLE_RATE as f32 * constants::AGC_FRAME_MS / 1000.0) as usize;
+    let mut agc_buf = Vec::<f32>::with_capacity(agc_frame_samples);
 
     // ---------- spectrum visualisation setup ---------------------------- //
     const BUCKETS: usize = 16;
